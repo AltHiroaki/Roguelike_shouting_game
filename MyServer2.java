@@ -88,7 +88,7 @@ class MyServer2 {
 		flag[n] = value;
 	}
 
-	// mainプログラム
+	// main プログラム
 	public static void main(String[] args) {
 		// 必要な配列を確保する
 		incoming = new Socket[maxConnection];
