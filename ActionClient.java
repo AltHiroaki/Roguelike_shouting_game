@@ -11,8 +11,9 @@ import java.util.concurrent.*;
 
 /**
  * アクションゲームのクライアントクラス。
- * サーバーと通信を行い、プレイヤーの移動、弾の発射、障害物判定などの
- * ゲームロジックと描画（GUI）を一元管理します。
+ * サーバーと通信を行い、ゲームロジックと描画を管理します。
+ * 弾の処理に「オブジェクトプーリング」を導入し、メモリ負荷を軽減しています。
+ * アイテム機能は削除済みです。
  */
 public class ActionClient extends JFrame {
 
@@ -21,17 +22,12 @@ public class ActionClient extends JFrame {
 	// ==========================================
 
 	// --- 通信設定 ---
-	/** 接続先サーバーの IP アドレス */
 	private static final String SERVER_IP = "127.000.000.001";
-	/** 接続先サーバーのポート番号 */
 	private static final int SERVER_PORT = 10000;
-	/** 参加するゲーム ID */
 	private static final int TARGET_GAME_ID = 1;
 
 	// --- 画像ファイル設定 ---
-	/** 自機の画像ファイルパス */
 	private static final String IMAGE_PATH_PLAYER_ME = "player_me.png";
-	/** 敵機の画像ファイルパス */
 	private static final String IMAGE_PATH_PLAYER_ENEMY = "player_enemy.png";
 
 	// --- マップ設定 ---
@@ -52,6 +48,7 @@ public class ActionClient extends JFrame {
 	private static final int PLAYER_SIZE = 15;            // 半径（描画サイズはこの2倍）
 
 	// --- 弾(Bullet)設定 ---
+	private static final int MAX_BULLETS = 500; // 画面上に出せる弾の最大数（オブジェクトプールサイズ）
 	private static final int BULLET_DAMAGE = 10;          // 弾のダメージ
 	private static final double BULLET_SPEED = 10.0;      // 弾の速度
 	private static final int BULLET_SIZE = 8;             // 弾の直径
@@ -75,13 +72,11 @@ public class ActionClient extends JFrame {
 	private GamePanel panel;
 	private javax.swing.Timer gameTimer;
 
-	/** ゲームの状態を表す列挙型 */
 	enum GameState { TITLE, WAITING, PLAYING, RESULT }
 	private GameState currentState = GameState.TITLE;
 
 	private String resultMessage = "";
 	private int timeLeft;
-	/** 参加中のプレイヤー ID を管理するセット */
 	private Set<Integer> joinedPlayers = Collections.synchronizedSet(new HashSet<>());
 
 	// ==========================================
@@ -101,18 +96,23 @@ public class ActionClient extends JFrame {
 	// ==========================================
 	//  データリスト
 	// ==========================================
-	/** プレイヤー情報を管理するマップ (Key: PlayerID, Value: PlayerObj) */
 	private ConcurrentHashMap<Integer, Player> players = new ConcurrentHashMap<>();
-	/** 現在存在する弾のリスト */
-	private CopyOnWriteArrayList<Bullet> bullets = new CopyOnWriteArrayList<>();
-	/** 障害物（壁）のリスト */
+
+	/** 弾のオブジェクトプール（固定長配列） */
+	private Bullet[] bulletPool = new Bullet[MAX_BULLETS];
+
 	private ArrayList<Line2D.Double> obstacles = new ArrayList<>();
 
 	/**
 	 * コンストラクタ。
-	 * 画像の読み込み、サーバー接続、GUI の初期化、タイマーの開始を行います。
+	 * プールの初期化、画像読み込み、サーバー接続、GUI設定を行います。
 	 */
 	public ActionClient() {
+		// 弾プールを事前に生成して埋めておく
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			bulletPool[i] = new Bullet();
+		}
+
 		loadImages();
 		setupConnection(SERVER_IP, SERVER_PORT);
 
@@ -123,46 +123,28 @@ public class ActionClient extends JFrame {
 		panel = new GamePanel();
 		add(panel);
 
-		// ゲームループの開始 (約60FPS)
 		gameTimer = new javax.swing.Timer(1000 / FPS, e -> gameLoop());
 		gameTimer.start();
 
 		setVisible(true);
 	}
 
-	/**
-	 * プレイヤー画像をファイルから読み込みます。
-	 */
 	private void loadImages() {
 		try {
 			File fileMe = new File(IMAGE_PATH_PLAYER_ME);
-			if (fileMe.exists()) {
-				imgPlayerMe = ImageIO.read(fileMe);
-				System.out.println("自機画像を読み込みました: " + fileMe.getAbsolutePath());
-			}
-
+			if (fileMe.exists()) imgPlayerMe = ImageIO.read(fileMe);
 			File fileEnemy = new File(IMAGE_PATH_PLAYER_ENEMY);
-			if (fileEnemy.exists()) {
-				imgPlayerEnemy = ImageIO.read(fileEnemy);
-				System.out.println("敵画像を読み込みました: " + fileEnemy.getAbsolutePath());
-			}
+			if (fileEnemy.exists()) imgPlayerEnemy = ImageIO.read(fileEnemy);
 		} catch (IOException e) {
 			System.err.println("画像の読み込みに失敗しました: " + e.getMessage());
 		}
 	}
 
-	/**
-	 * サーバーへの接続を確立し、受信スレッドを開始します。
-	 *
-	 * @param host サーバーのホスト名または IP
-	 * @param port ポート番号
-	 */
 	private void setupConnection(String host, int port) {
 		try {
 			socket = new Socket(host, port);
 			out = new PrintWriter(socket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			// 受信処理を別スレッドで実行
 			new Thread(this::receiveLoop).start();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, "サーバーに接続できませんでした: " + host + ":" + port);
@@ -170,10 +152,6 @@ public class ActionClient extends JFrame {
 		}
 	}
 
-	/**
-	 * ゲームループのメイン処理。
-	 * 状態に応じて更新処理を呼び出し、画面を再描画します。
-	 */
 	private void gameLoop() {
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
@@ -192,19 +170,20 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ゲームプレイ中のロジック更新を行います。
-	 * 時間管理、自機の移動更新、弾の移動・衝突判定などを処理します。
-	 *
-	 * @param me 自機の Player オブジェクト
+	 * ゲームループ内の更新処理。
+	 * 弾の移動・衝突判定ロジックを配列ベースで処理します。
 	 */
 	private void updateGame(Player me) {
 		if (timeLeft > 0) timeLeft--; else checkTimeUp();
 
-		// 自機の移動更新
 		me.update(panel.mouseX, panel.mouseY, panel, obstacles);
 
 		// --- 弾の処理 ---
-		for (Bullet b : bullets) {
+		// 配列を走査して「生きている」弾だけ処理する
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			Bullet b = bulletPool[i];
+			if (!b.isActive) continue; // 死んでいる弾はスキップ
+
 			b.update();
 
 			// 1. 外枠との反射判定
@@ -212,21 +191,21 @@ public class ActionClient extends JFrame {
 			if (b.x < MAP_X) {
 				if (b.bounceCount < 1) {
 					b.bounceCount++; b.angle = Math.PI - b.angle; b.x = MAP_X; hitBoundary = true;
-				} else { bullets.remove(b); continue; }
+				} else { b.deactivate(); continue; } // 消滅
 			} else if (b.x > MAP_X + MAP_WIDTH) {
 				if (b.bounceCount < 1) {
 					b.bounceCount++; b.angle = Math.PI - b.angle; b.x = MAP_X + MAP_WIDTH; hitBoundary = true;
-				} else { bullets.remove(b); continue; }
+				} else { b.deactivate(); continue; } // 消滅
 			}
 
 			if (b.y < MAP_Y) {
 				if (b.bounceCount < 1) {
 					b.bounceCount++; b.angle = -b.angle; b.y = MAP_Y; hitBoundary = true;
-				} else { bullets.remove(b); continue; }
+				} else { b.deactivate(); continue; }
 			} else if (b.y > MAP_Y + MAP_HEIGHT) {
 				if (b.bounceCount < 1) {
 					b.bounceCount++; b.angle = -b.angle; b.y = MAP_Y + MAP_HEIGHT; hitBoundary = true;
-				} else { bullets.remove(b); continue; }
+				} else { b.deactivate(); continue; } // 消滅
 			}
 
 			if (!hitBoundary) {
@@ -240,21 +219,19 @@ public class ActionClient extends JFrame {
 							else b.angle = Math.PI - b.angle; // 縦壁
 							hitObstacle = true; break;
 						} else {
-							bullets.remove(b); hitObstacle = true; break;
+							b.deactivate(); hitObstacle = true; break; // 消滅
 						}
 					}
 				}
-				if (hitObstacle && !bullets.contains(b)) continue;
+				if (hitObstacle && !b.isActive) continue;
 			}
 
-			// 3. プレイヤーへのヒット判定 (自爆あり、定数使用)
+			// 3. プレイヤーへのヒット判定
 			if (b.ownerId != myId || b.lifeTimer > BULLET_SELF_HIT_DELAY) {
 				if (me.getBounds().contains(b.x, b.y)) {
-					me.hp -= BULLET_DAMAGE; // 定数ダメージ
-
-					// 弾が当たったことを全員に通知して消す
+					me.hp -= BULLET_DAMAGE;
 					out.println("BULLET_HIT " + b.id);
-					bullets.remove(b); // 自分の画面でも即座に消す
+					b.deactivate(); // 即座に消す
 
 					if (me.hp <= 0) {
 						me.hp = 0;
@@ -265,60 +242,66 @@ public class ActionClient extends JFrame {
 			}
 		}
 
-		// --- 弾同士の相殺判定 (定数使用) ---
-		Set<Bullet> collidedBullets = new HashSet<>();
-		for (int i = 0; i < bullets.size(); i++) {
-			Bullet b1 = bullets.get(i);
-			for (int j = i + 1; j < bullets.size(); j++) {
-				Bullet b2 = bullets.get(j);
+		// --- 弾同士の相殺判定 ---
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			Bullet b1 = bulletPool[i];
+			if (!b1.isActive) continue;
+
+			for (int j = i + 1; j < MAX_BULLETS; j++) {
+				Bullet b2 = bulletPool[j];
+				if (!b2.isActive) continue;
 
 				if (b1.ownerId == b2.ownerId) continue;
 
 				double distSq = (b1.x - b2.x)*(b1.x - b2.x) + (b1.y - b2.y)*(b1.y - b2.y);
-				// 定数 BULLET_COLLISION_DIST_SQ を使用
 				if (distSq < BULLET_COLLISION_DIST_SQ) {
-					collidedBullets.add(b1);
-					collidedBullets.add(b2);
+					b1.deactivate();
+					b2.deactivate();
 				}
 			}
 		}
-		bullets.removeAll(collidedBullets);
 
-		// 自分の最新情報をサーバーへ送信
 		out.println("MOVE " + (int)me.x + " " + (int)me.y + " " + me.angle + " " + me.hp
 				+ " " + me.isReloading + " " + me.reloadTimer);
 	}
 
 	/**
-	 * 待機状態において、ゲーム開始条件（2人以上参加）を満たしたか確認します。
+	 * 空いている弾を探して発射（アクティブ化）します。
 	 */
+	private void spawnBullet(int id, double x, double y, double angle, double speed, int ownerId) {
+		for (Bullet b : bulletPool) {
+			if (!b.isActive) {
+				b.activate(id, x, y, angle, speed, ownerId);
+				return; // 1つ見つけたら終了
+			}
+		}
+		// ここに来る＝プール枯渇（弾が多すぎる）
+		System.out.println("弾のプールが上限に達しています！");
+	}
+
 	private void checkStartCondition() {
 		if (currentState == GameState.WAITING && joinedPlayers.size() >= 2) {
 			startGame();
 		}
 	}
 
-	/**
-	 * ゲームを開始するための初期化処理を行います。
-	 * タイマーリセット、障害物生成、プレイヤー位置のリセットなどを行います。
-	 */
 	private void startGame() {
 		System.out.println("Game Start!");
 		currentState = GameState.PLAYING;
 		timeLeft = TIME_LIMIT_SEC * FPS;
-		bullets.clear();
+
+		// 全ての弾をリセット（無効化）
+		for(Bullet b : bulletPool) b.deactivate();
 
 		int minId = Integer.MAX_VALUE;
 		for(int id : players.keySet()) minId = Math.min(minId, id);
 
-		// ホスト（IDが一番小さいプレイヤー）が障害物を生成して送信する
 		if (myId == minId) {
 			obstacles.clear();
 			generateObstacles();
 			sendObstacleData();
 		}
 
-		// プレイヤーの初期位置設定
 		ArrayList<Integer> sortedIds = new ArrayList<>(players.keySet());
 		Collections.sort(sortedIds);
 
@@ -333,9 +316,6 @@ public class ActionClient extends JFrame {
 		}
 	}
 
-	/**
-	 * 選択されたマップタイプに基づいて障害物（壁）を生成します。
-	 */
 	private void generateObstacles() {
 		obstacles.clear();
 		if (selectedMapType == MAP_TYPE_A) {
@@ -358,7 +338,6 @@ public class ActionClient extends JFrame {
 			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + 50, MAP_X + MAP_WIDTH/2, MAP_Y + 150));
 			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 150, MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 50));
 		} else {
-			// ランダム生成
 			for (int i = 0; i < OBSTACLE_COUNT; i++) {
 				int margin = 100;
 				int x1 = MAP_X + margin + (int)(Math.random() * (MAP_WIDTH - margin * 2));
@@ -374,9 +353,6 @@ public class ActionClient extends JFrame {
 		}
 	}
 
-	/**
-	 * 生成された障害物データをサーバー経由で他のクライアントに送信します。
-	 */
 	private void sendObstacleData() {
 		StringBuilder sb = new StringBuilder("MAP_DATA");
 		for (Line2D.Double line : obstacles) {
@@ -386,20 +362,12 @@ public class ActionClient extends JFrame {
 		out.println(sb.toString());
 	}
 
-	/**
-	 * ゲーム終了処理を行い、リザルト画面へ遷移します。
-	 *
-	 * @param msg 表示する結果メッセージ
-	 */
 	private void setGameOver(String msg) {
 		if (currentState == GameState.RESULT) return;
 		currentState = GameState.RESULT;
 		resultMessage = msg;
 	}
 
-	/**
-	 * タイムアップ時の勝敗判定を行います。
-	 */
 	private void checkTimeUp() {
 		if (currentState != GameState.PLAYING) return;
 		Player me = players.get(myId);
@@ -412,18 +380,12 @@ public class ActionClient extends JFrame {
 		else setGameOver("DRAW (TIME UP)");
 	}
 
-	/**
-	 * タイトル画面へ戻る処理を行います。
-	 */
 	private void backToTitle() {
 		currentState = GameState.TITLE;
 		joinedPlayers.clear();
 		resultMessage = "";
 	}
 
-	/**
-	 * サーバーとの切断を検知した際の処理です。
-	 */
 	private void handleDisconnection() {
 		SwingUtilities.invokeLater(() -> {
 			JOptionPane.showMessageDialog(this, "サーバーとの接続が切れました。");
@@ -431,9 +393,6 @@ public class ActionClient extends JFrame {
 		});
 	}
 
-	/**
-	 * サーバーからのメッセージを常時受信するループ処理です。
-	 */
 	private void receiveLoop() {
 		try {
 			String line;
@@ -444,24 +403,15 @@ public class ActionClient extends JFrame {
 				SwingUtilities.invokeLater(() -> { processCommand(cmd, finalTokens); });
 			}
 		} catch (Exception e) {
-			// エラー発生時は切断扱いとする
 		} finally { handleDisconnection(); }
 	}
 
-	/**
-	 * サーバーから受信したコマンドを解析し、適切な処理を実行します。
-	 *
-	 * @param cmd コマンド文字列
-	 * @param tokens パラメータ配列
-	 */
 	private void processCommand(String cmd, String[] tokens) {
 		try {
 			if (cmd.equals("START")) {
-				// 初期接続時：自分のIDを受信
 				myId = Integer.parseInt(tokens[1]);
 				players.put(myId, new Player(MAP_X + 100, MAP_Y + 200, Color.BLUE));
 			} else if (cmd.equals("MOVE")) {
-				// 他プレイヤーの移動情報受信
 				int x = Integer.parseInt(tokens[1]); int y = Integer.parseInt(tokens[2]);
 				double angle = Double.parseDouble(tokens[3]); int hp = Integer.parseInt(tokens[4]);
 				boolean isReloading = Boolean.parseBoolean(tokens[5]);
@@ -472,33 +422,35 @@ public class ActionClient extends JFrame {
 					p.isReloading = isReloading; p.reloadTimer = reloadTimer;
 				}
 			} else if (cmd.equals("SHOT")) {
-				// 弾発射情報受信
 				if (currentState == GameState.PLAYING) {
+					// ★プールから弾を取得して発射
 					int bId = Integer.parseInt(tokens[1]);
 					double x = Double.parseDouble(tokens[2]);
 					double y = Double.parseDouble(tokens[3]);
 					double angle = Double.parseDouble(tokens[4]);
 					double speed = Double.parseDouble(tokens[5]);
 					int id = Integer.parseInt(tokens[6]);
-					bullets.add(new Bullet(bId, x, y, angle, speed, id));
+					spawnBullet(bId, x, y, angle, speed, id);
 				}
 			} else if (cmd.equals("BULLET_HIT")) {
-				// 弾の命中（消失）情報受信
+				// ★IDが一致する弾をプールから探して無効化
 				int targetBulletId = Integer.parseInt(tokens[1]);
-				bullets.removeIf(b -> b.id == targetBulletId);
+				for (Bullet b : bulletPool) {
+					if (b.isActive && b.id == targetBulletId) {
+						b.deactivate();
+						break;
+					}
+				}
 
 			} else if (cmd.equals("LEAVE")) {
-				// プレイヤー切断情報受信
 				int id = Integer.parseInt(tokens[1]);
 				players.remove(id); joinedPlayers.remove(id);
 			} else if (cmd.equals("DEAD")) {
-				// プレイヤー死亡情報受信
 				if (currentState == GameState.PLAYING) {
 					int deadPlayerId = Integer.parseInt(tokens[1]);
 					if (deadPlayerId != myId) setGameOver("YOU WIN");
 				}
 			} else if (cmd.equals("JOIN")) {
-				// ロビーへの参加情報受信
 				int gameId = Integer.parseInt(tokens[1]); int playerId = Integer.parseInt(tokens[2]);
 				if (gameId == TARGET_GAME_ID) {
 					joinedPlayers.add(playerId);
@@ -507,7 +459,6 @@ public class ActionClient extends JFrame {
 					}
 				}
 			} else if (cmd.equals("MAP_DATA")) {
-				// マップ（障害物）情報受信
 				obstacles.clear();
 				for (int i = 1; i < tokens.length - 1; i += 4) {
 					try {
@@ -516,7 +467,6 @@ public class ActionClient extends JFrame {
 						obstacles.add(new Line2D.Double(x1, y1, x2, y2));
 					} catch(Exception e) { break; }
 				}
-				// 位置の初期化（再配置）
 				int minId = Integer.MAX_VALUE;
 				for(int id : players.keySet()) minId = Math.min(minId, id);
 				Player me = players.get(myId);
@@ -532,10 +482,6 @@ public class ActionClient extends JFrame {
 	//  内部クラス
 	// ==========================================
 
-	/**
-	 * プレイヤークラス。
-	 * 位置、HP、弾数、リロード状態などを管理し、描画も担当します。
-	 */
 	class Player {
 		double x, y, angle; int hp = PLAYER_MAX_HP; Color color;
 		int maxAmmo = PLAYER_MAX_AMMO; int currentAmmo = PLAYER_MAX_AMMO;
@@ -544,17 +490,8 @@ public class ActionClient extends JFrame {
 		boolean isReloading = false; int reloadTimer = 0;
 
 		public Player(double x, double y, Color c) { this.x = x; this.y = y; this.color = c; }
-
-		/** 状態をリセットします */
 		public void reset() { hp = PLAYER_MAX_HP; currentAmmo = maxAmmo; isReloading = false; reloadTimer = 0; }
 
-		/**
-		 * プレイヤーの状態を更新します（移動、リロード処理）。
-		 * @param mx マウス X 座標
-		 * @param my マウス Y 座標
-		 * @param panel ゲームパネル
-		 * @param obstacles 障害物リスト
-		 */
 		public void update(int mx, int my, GamePanel panel, ArrayList<Line2D.Double> obstacles) {
 			double nextX = x;
 			if (panel.keyA) nextX -= speed;
@@ -587,20 +524,13 @@ public class ActionClient extends JFrame {
 			}
 		}
 
-		/** リロードを開始します */
 		public void startReload() { if (currentAmmo < maxAmmo && !isReloading) { isReloading = true; reloadTimer = 0; } }
-
-		/** 当たり判定用の矩形を返します */
 		public Rectangle getBounds() { return new Rectangle((int)x-15, (int)y-15, 30, 30); }
 
-		/**
-		 * プレイヤーを描画します。
-		 * @param g2d Graphics2Dオブジェクト
-		 */
 		public void draw(Graphics2D g2d) {
 			AffineTransform old = g2d.getTransform(); g2d.translate(x, y);
 
-			// HP バー
+			// HPバー
 			g2d.setColor(Color.RED); g2d.fillRect(-20, -35, 40, 5);
 			g2d.setColor(Color.GREEN); g2d.fillRect(-20, -35, (int)(40 * (hp / (double)PLAYER_MAX_HP)), 5);
 
@@ -612,17 +542,15 @@ public class ActionClient extends JFrame {
 				g2d.fillRect(-20, -45, (int)(40 * progress), 5);
 			}
 
-			// 本体描画 (回転)
+			// 本体描画
 			g2d.rotate(angle);
-
 			BufferedImage img = (this.color == Color.BLUE) ? imgPlayerMe : imgPlayerEnemy;
-
 			if (img != null) {
 				g2d.drawImage(img, -size, -size, size*2, size*2, null);
 			} else {
 				if (isReloading) g2d.setColor(color.darker()); else g2d.setColor(color);
 				g2d.fillRect(-size, -size, size*2, size*2);
-				g2d.setColor(Color.BLACK); g2d.drawLine(0, 0, 25, 0); // 銃口
+				g2d.setColor(Color.BLACK); g2d.drawLine(0, 0, 25, 0);
 			}
 			g2d.setTransform(old);
 		}
@@ -630,46 +558,59 @@ public class ActionClient extends JFrame {
 
 	/**
 	 * 弾クラス。
-	 * 弾の移動計算と描画を担当します。
+	 * オブジェクトプーリングに対応し、再利用可能な構造に変更。
 	 */
 	class Bullet {
-		int id; // 弾ID
-		double x, y, angle, speed; int ownerId;
-		int bounceCount = 0; // 反射回数カウント
-		int lifeTimer = 0;   // 生存時間(フレーム数)
+		boolean isActive = false; // 生存フラグ
 
-		public Bullet(int id, double x, double y, double angle, double speed, int ownerId) {
-			this.id = id;
-			this.x = x; this.y = y; this.angle = angle; this.speed = speed; this.ownerId = ownerId;
+		int id;
+		double x, y, angle, speed; int ownerId;
+		int bounceCount = 0;
+		int lifeTimer = 0;
+
+		public Bullet() {
+			this.isActive = false;
 		}
 
-		/** 弾の位置を更新します */
+		/**
+		 * 弾を有効化（発射）します。
+		 * コンストラクタの代わりに値をセットし、フラグを立てます。
+		 */
+		public void activate(int id, double x, double y, double angle, double speed, int ownerId) {
+			this.id = id;
+			this.x = x; this.y = y; this.angle = angle; this.speed = speed; this.ownerId = ownerId;
+			this.bounceCount = 0;
+			this.lifeTimer = 0;
+			this.isActive = true;
+		}
+
+		/** 弾を無効化（消滅）させます。 */
+		public void deactivate() {
+			this.isActive = false;
+		}
+
 		public void update() {
+			if (!isActive) return;
 			lifeTimer++;
 			x += Math.cos(angle) * speed;
 			y += Math.sin(angle) * speed;
 		}
 
-		/** 弾を描画します */
-		public void draw(Graphics2D g2d) { g2d.setColor(Color.YELLOW); g2d.fillOval((int)x-BULLET_SIZE/2, (int)y-BULLET_SIZE/2, BULLET_SIZE, BULLET_SIZE); }
+		public void draw(Graphics2D g2d) {
+			if (!isActive) return;
+			g2d.setColor(Color.YELLOW);
+			g2d.fillOval((int)x-BULLET_SIZE/2, (int)y-BULLET_SIZE/2, BULLET_SIZE, BULLET_SIZE);
+		}
 	}
 
-	/**
-	 * ゲーム画面を描画するパネルクラス。
-	 * キー入力とマウス入力のイベントリスナーも兼ねます。
-	 */
 	class GamePanel extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 		boolean keyW, keyS, keyA, keyD; int mouseX, mouseY;
-
-		// マップ選択ボタンの定義
-		Rectangle startButtonRect = new Rectangle(300, 450, 200, 60); // STARTボタン位置調整
+		Rectangle startButtonRect = new Rectangle(300, 450, 200, 60);
 		Rectangle[] mapButtons = new Rectangle[3];
 
 		public GamePanel() {
 			setFocusable(true); setBackground(Color.DARK_GRAY);
 			addKeyListener(this); addMouseListener(this); addMouseMotionListener(this);
-
-			// マップ選択ボタンの配置
 			int btnW = 120; int btnH = 40; int startX = 200; int y = 380;
 			mapButtons[0] = new Rectangle(startX, y, btnW, btnH);
 			mapButtons[1] = new Rectangle(startX + 140, y, btnW, btnH);
@@ -687,21 +628,18 @@ public class ActionClient extends JFrame {
 			else if (currentState == GameState.RESULT) { drawGameScreen(g2d); drawResultScreen(g2d); }
 		}
 
-		/** タイトル画面の描画 */
 		private void drawTitleScreen(Graphics2D g2d) {
 			g2d.setColor(Color.CYAN); g2d.setFont(new Font("Arial", Font.BOLD, 50));
 			String title = "BATTLE GAME"; int tw = g2d.getFontMetrics().stringWidth(title);
 			g2d.drawString(title, (800 - tw) / 2, 200);
 
-			// マップ選択ボタン描画
 			g2d.setFont(new Font("Arial", Font.BOLD, 16));
 			String[] labels = {"Random", "Map A", "Map B"};
 			for (int i = 0; i < 3; i++) {
 				Rectangle btn = mapButtons[i];
-				if (selectedMapType == i) g2d.setColor(Color.YELLOW); // 選択中は黄色
+				if (selectedMapType == i) g2d.setColor(Color.YELLOW);
 				else g2d.setColor(Color.LIGHT_GRAY);
 				g2d.fill(btn);
-
 				g2d.setColor(Color.BLACK);
 				String lb = labels[i];
 				int sw = g2d.getFontMetrics().stringWidth(lb);
@@ -713,7 +651,6 @@ public class ActionClient extends JFrame {
 			g2d.drawString("START", startButtonRect.x + 50, startButtonRect.y + 40);
 		}
 
-		/** 待機画面の描画 */
 		private void drawWaitingScreen(Graphics2D g2d) {
 			g2d.setColor(Color.WHITE); g2d.setFont(new Font("Arial", Font.BOLD, 30));
 			String msg = "WAITING FOR OPPONENT..."; int tw = g2d.getFontMetrics().stringWidth(msg);
@@ -722,20 +659,21 @@ public class ActionClient extends JFrame {
 			g2d.drawString("Joined: " + joinedPlayers.size(), (800 - tw) / 2, 350);
 		}
 
-		/** ゲームプレイ画面の描画 */
 		private void drawGameScreen(Graphics2D g2d) {
 			g2d.setColor(Color.WHITE); g2d.setStroke(new BasicStroke(3));
 			g2d.drawRect(MAP_X, MAP_Y, MAP_WIDTH, MAP_HEIGHT);
 			g2d.setColor(Color.LIGHT_GRAY); g2d.setStroke(new BasicStroke(5));
 			for (Line2D.Double wall : obstacles) g2d.draw(wall);
 			g2d.setStroke(new BasicStroke(1));
-			// アイテム描画ループを削除
+
 			for (Player p : players.values()) p.draw(g2d);
-			for (Bullet b : bullets) b.draw(g2d);
+
+			// ★弾プールを描画
+			for (Bullet b : bulletPool) b.draw(g2d);
+
 			drawGameStatus(g2d);
 		}
 
-		/** ゲーム内ステータス（時間、弾数）の描画 */
 		private void drawGameStatus(Graphics2D g2d) {
 			int textY = MAP_Y + MAP_HEIGHT + 40;
 			g2d.setColor(Color.WHITE); g2d.setFont(new Font("Monospaced", Font.BOLD, 24));
@@ -750,7 +688,6 @@ public class ActionClient extends JFrame {
 			}
 		}
 
-		/** 結果画面の描画 */
 		private void drawResultScreen(Graphics2D g2d) {
 			g2d.setColor(new Color(0, 0, 0, 150)); g2d.fillRect(0, 0, 800, 650);
 			g2d.setFont(new Font("Arial", Font.BOLD, 60));
@@ -764,11 +701,9 @@ public class ActionClient extends JFrame {
 			g2d.drawString(guide, (800 - gw) / 2, 400);
 		}
 
-		// --- マウス・キー入力イベント処理 ---
 		public void mousePressed(MouseEvent e) {
 			int mx = e.getX(); int my = e.getY();
 			if (currentState == GameState.TITLE) {
-				// マップボタンクリック判定
 				for (int i = 0; i < 3; i++) {
 					if (mapButtons[i].contains(mx, my)) {
 						selectedMapType = i;
@@ -783,7 +718,6 @@ public class ActionClient extends JFrame {
 				if (me.isReloading) return;
 				if (me.currentAmmo > 0) {
 					me.currentAmmo--;
-					// 弾IDを生成して送信
 					int bulletId = (int)(Math.random() * 1000000);
 					out.println("SHOT " + bulletId + " " + me.x + " " + me.y + " " + me.angle + " " + BULLET_SPEED);
 				} else { me.startReload(); }
