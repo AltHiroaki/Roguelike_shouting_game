@@ -10,83 +10,82 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚²ãƒ¼ãƒ ã®ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‚¯ãƒ©ã‚¹ã€‚
- *
- * ã‚µãƒ¼ãƒãƒ¼ã¨é€šä¿¡ã‚’è¡Œã„ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•ã€å¼¾ã®ç™ºå°„ã€éšœå®³ç‰©åˆ¤å®šãªã©ã®
- * ã‚²ãƒ¼ãƒ ãƒ­ã‚¸ãƒƒã‚¯ã¨æç”»ï¼ˆGUIï¼‰ã‚’ä¸€å…ƒç®¡ç†ã—ã¾ã™ã€‚
+ * ƒAƒNƒVƒ‡ƒ“ƒQ[ƒ€‚ÌƒNƒ‰ƒCƒAƒ“ƒgƒNƒ‰ƒXB
+ * ƒT[ƒo[‚Æ’ÊM‚ğs‚¢AƒvƒŒƒCƒ„[‚ÌˆÚ“®A’e‚Ì”­ËAáŠQ•¨”»’è‚È‚Ç‚Ì
+ * ƒQ[ƒ€ƒƒWƒbƒN‚Æ•`‰æiGUIj‚ğˆêŒ³ŠÇ—‚µ‚Ü‚·B
  */
 public class ActionClient extends JFrame {
 
 	// ==========================================
-	//  ã€è¨­å®šãƒ»å®šæ•°ã‚¨ãƒªã‚¢ã€‘
+	//  yİ’èE’è”ƒGƒŠƒAz
 	// ==========================================
 
-	// --- é€šä¿¡è¨­å®š ---
-	/** æ¥ç¶šå…ˆã‚µãƒ¼ãƒãƒ¼ã®IPã‚¢ãƒ‰ãƒ¬ã‚¹ */
-	private static final String SERVER_IP = "13.208.87.43";
-	/** æ¥ç¶šå…ˆã‚µãƒ¼ãƒãƒ¼ã®ãƒãƒ¼ãƒˆç•ªå· */
+	// --- ’ÊMİ’è ---
+	/** Ú‘±æƒT[ƒo[‚Ì IP ƒAƒhƒŒƒX */
+	private static final String SERVER_IP = "127.000.000.001";
+	/** Ú‘±æƒT[ƒo[‚Ìƒ|[ƒg”Ô† */
 	private static final int SERVER_PORT = 10000;
-	/** å‚åŠ ã™ã‚‹ã‚²ãƒ¼ãƒ ID */
+	/** Q‰Á‚·‚éƒQ[ƒ€ ID */
 	private static final int TARGET_GAME_ID = 1;
 
-	// --- ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«è¨­å®š ---
-	/** è‡ªæ©Ÿã®ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ */
+	// --- ‰æ‘œƒtƒ@ƒCƒ‹İ’è ---
+	/** ©‹@‚Ì‰æ‘œƒtƒ@ƒCƒ‹ƒpƒX */
 	private static final String IMAGE_PATH_PLAYER_ME = "player_me.png";
-	/** æ•µæ©Ÿã®ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ */
+	/** “G‹@‚Ì‰æ‘œƒtƒ@ƒCƒ‹ƒpƒX */
 	private static final String IMAGE_PATH_PLAYER_ENEMY = "player_enemy.png";
 
-	// --- ãƒãƒƒãƒ—è¨­å®š ---
+	// --- ƒ}ƒbƒvİ’è ---
 	private static final int MAP_X = 50;
 	private static final int MAP_Y = 50;
 	private static final int MAP_WIDTH = 700;
 	private static final int MAP_HEIGHT = 450;
 
-	// --- ã‚²ãƒ¼ãƒ é€²è¡Œè¨­å®š ---
+	// --- ƒQ[ƒ€isİ’è ---
 	private static final int TIME_LIMIT_SEC = 60;
 	private static final int FPS = 60;
 
-	// --- ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è¨­å®š ---
-	private static final int PLAYER_MAX_HP = 100;         // æœ€å¤§HP
-	private static final int PLAYER_MAX_AMMO = 1;         // æœ€å¤§å¼¾æ•°
-	private static final int PLAYER_RELOAD_DURATION = 60; // ãƒªãƒ­ãƒ¼ãƒ‰ã«ã‹ã‹ã‚‹æ™‚é–“(ãƒ•ãƒ¬ãƒ¼ãƒ æ•°)
-	private static final double PLAYER_SPEED = 3.0;       // ç§»å‹•é€Ÿåº¦
-	private static final int PLAYER_SIZE = 15;            // åŠå¾„ï¼ˆæç”»ã‚µã‚¤ã‚ºã¯ã“ã®2å€ï¼‰
+	// --- ƒvƒŒƒCƒ„[İ’è ---
+	private static final int PLAYER_MAX_HP = 100;         // Å‘å HP
+	private static final int PLAYER_MAX_AMMO = 1;         // Å‘å’e”
+	private static final int PLAYER_RELOAD_DURATION = 60; // ƒŠƒ[ƒh‚É‚©‚©‚éŠÔ(ƒtƒŒ[ƒ€”)
+	private static final double PLAYER_SPEED = 3.0;       // ˆÚ“®‘¬“x
+	private static final int PLAYER_SIZE = 15;            // ”¼Œai•`‰æƒTƒCƒY‚Í‚±‚Ì2”{j
 
-	// --- å¼¾(Bullet)è¨­å®š ---
-	private static final int BULLET_DAMAGE = 10;          // å¼¾ã®ãƒ€ãƒ¡ãƒ¼ã‚¸
-	private static final double BULLET_SPEED = 10.0;      // å¼¾ã®é€Ÿåº¦
-	private static final int BULLET_SIZE = 8;             // å¼¾ã®ç›´å¾„
-	// å¼¾åŒå£«ã®ç›¸æ®ºåˆ¤å®šè·é›¢ã®äºŒä¹— ( (åŠå¾„+åŠå¾„)^2 = ç›´å¾„^2 )
+	// --- ’e(Bullet)İ’è ---
+	private static final int BULLET_DAMAGE = 10;          // ’e‚Ìƒ_ƒ[ƒW
+	private static final double BULLET_SPEED = 10.0;      // ’e‚Ì‘¬“x
+	private static final int BULLET_SIZE = 8;             // ’e‚Ì’¼Œa
+	// ’e“¯m‚Ì‘ŠE”»’è‹——£‚Ì“ñæ ( (”¼Œa+”¼Œa)^2 = ’¼Œa^2 )
 	private static final int BULLET_COLLISION_DIST_SQ = BULLET_SIZE * BULLET_SIZE;
-	private static final int BULLET_SELF_HIT_DELAY = 10;  // è‡ªåˆ†ã®å¼¾ãŒè‡ªåˆ†ã«å½“ãŸã‚‹ã¾ã§ã®çŒ¶äºˆãƒ•ãƒ¬ãƒ¼ãƒ 
+	private static final int BULLET_SELF_HIT_DELAY = 10;  // ©•ª‚Ì’e‚ª©•ª‚É“–‚½‚é‚Ü‚Å‚Ì—P—\ƒtƒŒ[ƒ€
 
-	// --- éšœå®³ç‰©è¨­å®š ---
+	// --- áŠQ•¨İ’è ---
 	private static final int OBSTACLE_COUNT = 8;
 	private static final int MIN_WALL_LENGTH = 50;
 	private static final int MAX_WALL_LENGTH = 150;
 
 	// ==========================================
-	//  ã‚·ã‚¹ãƒ†ãƒ å¤‰æ•°
+	//  ƒVƒXƒeƒ€•Ï”
 	// ==========================================
 	private Socket socket;
 	private PrintWriter out;
 	private BufferedReader in;
-	private int myId; // ã‚µãƒ¼ãƒãƒ¼ã‹ã‚‰å‰²ã‚Šå½“ã¦ã‚‰ã‚ŒãŸè‡ªåˆ†ã®ID
+	private int myId; // ƒT[ƒo[‚©‚çŠ„‚è“–‚Ä‚ç‚ê‚½©•ª‚Ì ID
 
 	private GamePanel panel;
 	private javax.swing.Timer gameTimer;
 
-	/** ã‚²ãƒ¼ãƒ ã®çŠ¶æ…‹ã‚’è¡¨ã™åˆ—æŒ™å‹ */
+	/** ƒQ[ƒ€‚Ìó‘Ô‚ğ•\‚·—ñ‹“Œ^ */
 	enum GameState { TITLE, WAITING, PLAYING, RESULT }
 	private GameState currentState = GameState.TITLE;
 
 	private String resultMessage = "";
 	private int timeLeft;
-	/** å‚åŠ ä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼IDã‚’ç®¡ç†ã™ã‚‹ã‚»ãƒƒãƒˆ */
+	/** Q‰Á’†‚ÌƒvƒŒƒCƒ„[ ID ‚ğŠÇ—‚·‚éƒZƒbƒg */
 	private Set<Integer> joinedPlayers = Collections.synchronizedSet(new HashSet<>());
 
 	// ==========================================
-	//  ãƒãƒƒãƒ—é¸æŠç”¨å¤‰æ•°
+	//  ƒ}ƒbƒv‘I‘ğ—p•Ï”
 	// ==========================================
 	private static final int MAP_TYPE_RANDOM = 0;
 	private static final int MAP_TYPE_A = 1;
@@ -94,24 +93,24 @@ public class ActionClient extends JFrame {
 	private int selectedMapType = MAP_TYPE_RANDOM;
 
 	// ==========================================
-	//  ç”»åƒãƒ‡ãƒ¼ã‚¿
+	//  ‰æ‘œƒf[ƒ^
 	// ==========================================
 	private BufferedImage imgPlayerMe;
 	private BufferedImage imgPlayerEnemy;
 
 	// ==========================================
-	//  ãƒ‡ãƒ¼ã‚¿ãƒªã‚¹ãƒˆ
+	//  ƒf[ƒ^ƒŠƒXƒg
 	// ==========================================
-	/** ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã‚’ç®¡ç†ã™ã‚‹ãƒãƒƒãƒ— (Key: PlayerID, Value: PlayerObj) */
+	/** ƒvƒŒƒCƒ„[î•ñ‚ğŠÇ—‚·‚éƒ}ƒbƒv (Key: PlayerID, Value: PlayerObj) */
 	private ConcurrentHashMap<Integer, Player> players = new ConcurrentHashMap<>();
-	/** ç¾åœ¨å­˜åœ¨ã™ã‚‹å¼¾ã®ãƒªã‚¹ãƒˆ */
+	/** Œ»İ‘¶İ‚·‚é’e‚ÌƒŠƒXƒg */
 	private CopyOnWriteArrayList<Bullet> bullets = new CopyOnWriteArrayList<>();
-	/** éšœå®³ç‰©ï¼ˆå£ï¼‰ã®ãƒªã‚¹ãƒˆ */
+	/** áŠQ•¨i•Çj‚ÌƒŠƒXƒg */
 	private ArrayList<Line2D.Double> obstacles = new ArrayList<>();
 
 	/**
-	 * ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€‚
-	 * ç”»åƒã®èª­ã¿è¾¼ã¿ã€ã‚µãƒ¼ãƒãƒ¼æ¥ç¶šã€GUIã®åˆæœŸåŒ–ã€ã‚¿ã‚¤ãƒãƒ¼ã®é–‹å§‹ã‚’è¡Œã„ã¾ã™ã€‚
+	 * ƒRƒ“ƒXƒgƒ‰ƒNƒ^B
+	 * ‰æ‘œ‚Ì“Ç‚İ‚İAƒT[ƒo[Ú‘±AGUI ‚Ì‰Šú‰»Aƒ^ƒCƒ}[‚ÌŠJn‚ğs‚¢‚Ü‚·B
 	 */
 	public ActionClient() {
 		loadImages();
@@ -124,7 +123,7 @@ public class ActionClient extends JFrame {
 		panel = new GamePanel();
 		add(panel);
 
-		// ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—ã®é–‹å§‹ (ç´„60FPS)
+		// ƒQ[ƒ€ƒ‹[ƒv‚ÌŠJn (–ñ60FPS)
 		gameTimer = new javax.swing.Timer(1000 / FPS, e -> gameLoop());
 		gameTimer.start();
 
@@ -132,48 +131,48 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”»åƒã‚’ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã¿ã¾ã™ã€‚
+	 * ƒvƒŒƒCƒ„[‰æ‘œ‚ğƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚İ‚Ü‚·B
 	 */
 	private void loadImages() {
 		try {
 			File fileMe = new File(IMAGE_PATH_PLAYER_ME);
 			if (fileMe.exists()) {
 				imgPlayerMe = ImageIO.read(fileMe);
-				System.out.println("è‡ªæ©Ÿç”»åƒã‚’èª­ã¿è¾¼ã¿ã¾ã—ãŸ: " + fileMe.getAbsolutePath());
+				System.out.println("©‹@‰æ‘œ‚ğ“Ç‚İ‚İ‚Ü‚µ‚½: " + fileMe.getAbsolutePath());
 			}
 
 			File fileEnemy = new File(IMAGE_PATH_PLAYER_ENEMY);
 			if (fileEnemy.exists()) {
 				imgPlayerEnemy = ImageIO.read(fileEnemy);
-				System.out.println("æ•µç”»åƒã‚’èª­ã¿è¾¼ã¿ã¾ã—ãŸ: " + fileEnemy.getAbsolutePath());
+				System.out.println("“G‰æ‘œ‚ğ“Ç‚İ‚İ‚Ü‚µ‚½: " + fileEnemy.getAbsolutePath());
 			}
 		} catch (IOException e) {
-			System.err.println("ç”»åƒã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: " + e.getMessage());
+			System.err.println("‰æ‘œ‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½: " + e.getMessage());
 		}
 	}
 
 	/**
-	 * ã‚µãƒ¼ãƒãƒ¼ã¸ã®æ¥ç¶šã‚’ç¢ºç«‹ã—ã€å—ä¿¡ã‚¹ãƒ¬ãƒƒãƒ‰ã‚’é–‹å§‹ã—ã¾ã™ã€‚
+	 * ƒT[ƒo[‚Ö‚ÌÚ‘±‚ğŠm—§‚µAóMƒXƒŒƒbƒh‚ğŠJn‚µ‚Ü‚·B
 	 *
-	 * @param host ã‚µãƒ¼ãƒãƒ¼ã®ãƒ›ã‚¹ãƒˆåã¾ãŸã¯IP
-	 * @param port ãƒãƒ¼ãƒˆç•ªå·
+	 * @param host ƒT[ƒo[‚ÌƒzƒXƒg–¼‚Ü‚½‚Í IP
+	 * @param port ƒ|[ƒg”Ô†
 	 */
 	private void setupConnection(String host, int port) {
 		try {
 			socket = new Socket(host, port);
 			out = new PrintWriter(socket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			// å—ä¿¡å‡¦ç†ã‚’åˆ¥ã‚¹ãƒ¬ãƒƒãƒ‰ã§å®Ÿè¡Œ
+			// óMˆ—‚ğ•ÊƒXƒŒƒbƒh‚ÅÀs
 			new Thread(this::receiveLoop).start();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, "ã‚µãƒ¼ãƒãƒ¼ã«æ¥ç¶šã§ãã¾ã›ã‚“ã§ã—ãŸ: " + host + ":" + port);
+			JOptionPane.showMessageDialog(this, "ƒT[ƒo[‚ÉÚ‘±‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½: " + host + ":" + port);
 			System.exit(0);
 		}
 	}
 
 	/**
-	 * ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—ã®ãƒ¡ã‚¤ãƒ³å‡¦ç†ã€‚
-	 * çŠ¶æ…‹ã«å¿œã˜ã¦æ›´æ–°å‡¦ç†ã‚’å‘¼ã³å‡ºã—ã€ç”»é¢ã‚’å†æç”»ã—ã¾ã™ã€‚
+	 * ƒQ[ƒ€ƒ‹[ƒv‚ÌƒƒCƒ“ˆ—B
+	 * ó‘Ô‚É‰‚¶‚ÄXVˆ—‚ğŒÄ‚Ño‚µA‰æ–Ê‚ğÄ•`‰æ‚µ‚Ü‚·B
 	 */
 	private void gameLoop() {
 		if (!players.containsKey(myId)) return;
@@ -193,22 +192,22 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ã‚²ãƒ¼ãƒ ãƒ—ãƒ¬ã‚¤ä¸­ã®ãƒ­ã‚¸ãƒƒã‚¯æ›´æ–°ã‚’è¡Œã„ã¾ã™ã€‚
-	 * æ™‚é–“ç®¡ç†ã€è‡ªæ©Ÿã®ç§»å‹•æ›´æ–°ã€å¼¾ã®ç§»å‹•ãƒ»è¡çªåˆ¤å®šãªã©ã‚’å‡¦ç†ã—ã¾ã™ã€‚
+	 * ƒQ[ƒ€ƒvƒŒƒC’†‚ÌƒƒWƒbƒNXV‚ğs‚¢‚Ü‚·B
+	 * ŠÔŠÇ—A©‹@‚ÌˆÚ“®XVA’e‚ÌˆÚ“®EÕ“Ë”»’è‚È‚Ç‚ğˆ—‚µ‚Ü‚·B
 	 *
-	 * @param me è‡ªæ©Ÿã®Playerã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+	 * @param me ©‹@‚Ì Player ƒIƒuƒWƒFƒNƒg
 	 */
 	private void updateGame(Player me) {
 		if (timeLeft > 0) timeLeft--; else checkTimeUp();
 
-		// è‡ªæ©Ÿã®ç§»å‹•æ›´æ–°
+		// ©‹@‚ÌˆÚ“®XV
 		me.update(panel.mouseX, panel.mouseY, panel, obstacles);
 
-		// --- å¼¾ã®å‡¦ç† ---
+		// --- ’e‚Ìˆ— ---
 		for (Bullet b : bullets) {
 			b.update();
 
-			// 1. å¤–æ ã¨ã®åå°„åˆ¤å®š
+			// 1. ŠO˜g‚Æ‚Ì”½Ë”»’è
 			boolean hitBoundary = false;
 			if (b.x < MAP_X) {
 				if (b.bounceCount < 1) {
@@ -231,14 +230,14 @@ public class ActionClient extends JFrame {
 			}
 
 			if (!hitBoundary) {
-				// 2. éšœå®³ç‰©ã¨ã®åå°„åˆ¤å®š
+				// 2. áŠQ•¨‚Æ‚Ì”½Ë”»’è
 				boolean hitObstacle = false;
 				for (Line2D.Double wall : obstacles) {
 					if (wall.ptSegDist(b.x, b.y) < 5) {
 						if (b.bounceCount < 1) {
 							b.bounceCount++;
-							if (Math.abs(wall.y1 - wall.y2) < 1.0) b.angle = -b.angle; // æ¨ªå£
-							else b.angle = Math.PI - b.angle; // ç¸¦å£
+							if (Math.abs(wall.y1 - wall.y2) < 1.0) b.angle = -b.angle; // ‰¡•Ç
+							else b.angle = Math.PI - b.angle; // c•Ç
 							hitObstacle = true; break;
 						} else {
 							bullets.remove(b); hitObstacle = true; break;
@@ -248,14 +247,14 @@ public class ActionClient extends JFrame {
 				if (hitObstacle && !bullets.contains(b)) continue;
 			}
 
-			// 3. ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸ã®ãƒ’ãƒƒãƒˆåˆ¤å®š (è‡ªçˆ†ã‚ã‚Šã€å®šæ•°ä½¿ç”¨)
+			// 3. ƒvƒŒƒCƒ„[‚Ö‚Ìƒqƒbƒg”»’è (©”š‚ ‚èA’è”g—p)
 			if (b.ownerId != myId || b.lifeTimer > BULLET_SELF_HIT_DELAY) {
 				if (me.getBounds().contains(b.x, b.y)) {
-					me.hp -= BULLET_DAMAGE; // å®šæ•°ãƒ€ãƒ¡ãƒ¼ã‚¸
+					me.hp -= BULLET_DAMAGE; // ’è”ƒ_ƒ[ƒW
 
-					// å¼¾ãŒå½“ãŸã£ãŸã“ã¨ã‚’å…¨å“¡ã«é€šçŸ¥ã—ã¦æ¶ˆã™
+					// ’e‚ª“–‚½‚Á‚½‚±‚Æ‚ğ‘Sˆõ‚É’Ê’m‚µ‚ÄÁ‚·
 					out.println("BULLET_HIT " + b.id);
-					bullets.remove(b); // è‡ªåˆ†ã®ç”»é¢ã§ã‚‚å³åº§ã«æ¶ˆã™
+					bullets.remove(b); // ©•ª‚Ì‰æ–Ê‚Å‚à‘¦À‚ÉÁ‚·
 
 					if (me.hp <= 0) {
 						me.hp = 0;
@@ -266,7 +265,7 @@ public class ActionClient extends JFrame {
 			}
 		}
 
-		// --- å¼¾åŒå£«ã®ç›¸æ®ºåˆ¤å®š (å®šæ•°ä½¿ç”¨) ---
+		// --- ’e“¯m‚Ì‘ŠE”»’è (’è”g—p) ---
 		Set<Bullet> collidedBullets = new HashSet<>();
 		for (int i = 0; i < bullets.size(); i++) {
 			Bullet b1 = bullets.get(i);
@@ -276,7 +275,7 @@ public class ActionClient extends JFrame {
 				if (b1.ownerId == b2.ownerId) continue;
 
 				double distSq = (b1.x - b2.x)*(b1.x - b2.x) + (b1.y - b2.y)*(b1.y - b2.y);
-				// å®šæ•° BULLET_COLLISION_DIST_SQ ã‚’ä½¿ç”¨
+				// ’è” BULLET_COLLISION_DIST_SQ ‚ğg—p
 				if (distSq < BULLET_COLLISION_DIST_SQ) {
 					collidedBullets.add(b1);
 					collidedBullets.add(b2);
@@ -285,13 +284,13 @@ public class ActionClient extends JFrame {
 		}
 		bullets.removeAll(collidedBullets);
 
-		// è‡ªåˆ†ã®æœ€æ–°æƒ…å ±ã‚’ã‚µãƒ¼ãƒãƒ¼ã¸é€ä¿¡
+		// ©•ª‚ÌÅVî•ñ‚ğƒT[ƒo[‚Ö‘—M
 		out.println("MOVE " + (int)me.x + " " + (int)me.y + " " + me.angle + " " + me.hp
 				+ " " + me.isReloading + " " + me.reloadTimer);
 	}
 
 	/**
-	 * å¾…æ©ŸçŠ¶æ…‹ã«ãŠã„ã¦ã€ã‚²ãƒ¼ãƒ é–‹å§‹æ¡ä»¶ï¼ˆ2äººä»¥ä¸Šå‚åŠ ï¼‰ã‚’æº€ãŸã—ãŸã‹ç¢ºèªã—ã¾ã™ã€‚
+	 * ‘Ò‹@ó‘Ô‚É‚¨‚¢‚ÄAƒQ[ƒ€ŠJnğŒi2lˆÈãQ‰Áj‚ğ–‚½‚µ‚½‚©Šm”F‚µ‚Ü‚·B
 	 */
 	private void checkStartCondition() {
 		if (currentState == GameState.WAITING && joinedPlayers.size() >= 2) {
@@ -300,8 +299,8 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ã‚²ãƒ¼ãƒ ã‚’é–‹å§‹ã™ã‚‹ãŸã‚ã®åˆæœŸåŒ–å‡¦ç†ã‚’è¡Œã„ã¾ã™ã€‚
-	 * ã‚¿ã‚¤ãƒãƒ¼ãƒªã‚»ãƒƒãƒˆã€éšœå®³ç‰©ç”Ÿæˆã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ä½ç½®ã®ãƒªã‚»ãƒƒãƒˆãªã©ã‚’è¡Œã„ã¾ã™ã€‚
+	 * ƒQ[ƒ€‚ğŠJn‚·‚é‚½‚ß‚Ì‰Šú‰»ˆ—‚ğs‚¢‚Ü‚·B
+	 * ƒ^ƒCƒ}[ƒŠƒZƒbƒgAáŠQ•¨¶¬AƒvƒŒƒCƒ„[ˆÊ’u‚ÌƒŠƒZƒbƒg‚È‚Ç‚ğs‚¢‚Ü‚·B
 	 */
 	private void startGame() {
 		System.out.println("Game Start!");
@@ -312,14 +311,14 @@ public class ActionClient extends JFrame {
 		int minId = Integer.MAX_VALUE;
 		for(int id : players.keySet()) minId = Math.min(minId, id);
 
-		// ãƒ›ã‚¹ãƒˆï¼ˆIDãŒä¸€ç•ªå°ã•ã„ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ï¼‰ãŒéšœå®³ç‰©ã‚’ç”Ÿæˆã—ã¦é€ä¿¡ã™ã‚‹
+		// ƒzƒXƒgiID‚ªˆê”Ô¬‚³‚¢ƒvƒŒƒCƒ„[j‚ªáŠQ•¨‚ğ¶¬‚µ‚Ä‘—M‚·‚é
 		if (myId == minId) {
 			obstacles.clear();
 			generateObstacles();
 			sendObstacleData();
 		}
 
-		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åˆæœŸä½ç½®è¨­å®š
+		// ƒvƒŒƒCƒ„[‚Ì‰ŠúˆÊ’uİ’è
 		ArrayList<Integer> sortedIds = new ArrayList<>(players.keySet());
 		Collections.sort(sortedIds);
 
@@ -335,7 +334,7 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * é¸æŠã•ã‚ŒãŸãƒãƒƒãƒ—ã‚¿ã‚¤ãƒ—ã«åŸºã¥ã„ã¦éšœå®³ç‰©ï¼ˆå£ï¼‰ã‚’ç”Ÿæˆã—ã¾ã™ã€‚
+	 * ‘I‘ğ‚³‚ê‚½ƒ}ƒbƒvƒ^ƒCƒv‚ÉŠî‚Ã‚¢‚ÄáŠQ•¨i•Çj‚ğ¶¬‚µ‚Ü‚·B
 	 */
 	private void generateObstacles() {
 		obstacles.clear();
@@ -359,7 +358,7 @@ public class ActionClient extends JFrame {
 			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + 50, MAP_X + MAP_WIDTH/2, MAP_Y + 150));
 			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 150, MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 50));
 		} else {
-			// ãƒ©ãƒ³ãƒ€ãƒ ç”Ÿæˆ
+			// ƒ‰ƒ“ƒ_ƒ€¶¬
 			for (int i = 0; i < OBSTACLE_COUNT; i++) {
 				int margin = 100;
 				int x1 = MAP_X + margin + (int)(Math.random() * (MAP_WIDTH - margin * 2));
@@ -376,7 +375,7 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ç”Ÿæˆã•ã‚ŒãŸéšœå®³ç‰©ãƒ‡ãƒ¼ã‚¿ã‚’ã‚µãƒ¼ãƒãƒ¼çµŒç”±ã§ä»–ã®ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã«é€ä¿¡ã—ã¾ã™ã€‚
+	 * ¶¬‚³‚ê‚½áŠQ•¨ƒf[ƒ^‚ğƒT[ƒo[Œo—R‚Å‘¼‚ÌƒNƒ‰ƒCƒAƒ“ƒg‚É‘—M‚µ‚Ü‚·B
 	 */
 	private void sendObstacleData() {
 		StringBuilder sb = new StringBuilder("MAP_DATA");
@@ -388,9 +387,9 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ã‚²ãƒ¼ãƒ çµ‚äº†å‡¦ç†ã‚’è¡Œã„ã€ãƒªã‚¶ãƒ«ãƒˆç”»é¢ã¸é·ç§»ã—ã¾ã™ã€‚
+	 * ƒQ[ƒ€I—¹ˆ—‚ğs‚¢AƒŠƒUƒ‹ƒg‰æ–Ê‚Ö‘JˆÚ‚µ‚Ü‚·B
 	 *
-	 * @param msg è¡¨ç¤ºã™ã‚‹çµæœãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+	 * @param msg •\¦‚·‚éŒ‹‰ÊƒƒbƒZ[ƒW
 	 */
 	private void setGameOver(String msg) {
 		if (currentState == GameState.RESULT) return;
@@ -399,7 +398,7 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ã‚¿ã‚¤ãƒ ã‚¢ãƒƒãƒ—æ™‚ã®å‹æ•—åˆ¤å®šã‚’è¡Œã„ã¾ã™ã€‚
+	 * ƒ^ƒCƒ€ƒAƒbƒv‚ÌŸ”s”»’è‚ğs‚¢‚Ü‚·B
 	 */
 	private void checkTimeUp() {
 		if (currentState != GameState.PLAYING) return;
@@ -414,7 +413,7 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ã‚¿ã‚¤ãƒˆãƒ«ç”»é¢ã¸æˆ»ã‚‹å‡¦ç†ã‚’è¡Œã„ã¾ã™ã€‚
+	 * ƒ^ƒCƒgƒ‹‰æ–Ê‚Ö–ß‚éˆ—‚ğs‚¢‚Ü‚·B
 	 */
 	private void backToTitle() {
 		currentState = GameState.TITLE;
@@ -423,17 +422,17 @@ public class ActionClient extends JFrame {
 	}
 
 	/**
-	 * ã‚µãƒ¼ãƒãƒ¼ã¨ã®åˆ‡æ–­ã‚’æ¤œçŸ¥ã—ãŸéš›ã®å‡¦ç†ã§ã™ã€‚
+	 * ƒT[ƒo[‚Æ‚ÌØ’f‚ğŒŸ’m‚µ‚½Û‚Ìˆ—‚Å‚·B
 	 */
 	private void handleDisconnection() {
 		SwingUtilities.invokeLater(() -> {
-			JOptionPane.showMessageDialog(this, "ã‚µãƒ¼ãƒãƒ¼ã¨ã®æ¥ç¶šãŒåˆ‡ã‚Œã¾ã—ãŸã€‚");
+			JOptionPane.showMessageDialog(this, "ƒT[ƒo[‚Æ‚ÌÚ‘±‚ªØ‚ê‚Ü‚µ‚½B");
 			backToTitle();
 		});
 	}
 
 	/**
-	 * ã‚µãƒ¼ãƒãƒ¼ã‹ã‚‰ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’å¸¸æ™‚å—ä¿¡ã™ã‚‹ãƒ«ãƒ¼ãƒ—å‡¦ç†ã§ã™ã€‚
+	 * ƒT[ƒo[‚©‚ç‚ÌƒƒbƒZ[ƒW‚ğíóM‚·‚éƒ‹[ƒvˆ—‚Å‚·B
 	 */
 	private void receiveLoop() {
 		try {
@@ -445,24 +444,24 @@ public class ActionClient extends JFrame {
 				SwingUtilities.invokeLater(() -> { processCommand(cmd, finalTokens); });
 			}
 		} catch (Exception e) {
-			// ã‚¨ãƒ©ãƒ¼ç™ºç”Ÿæ™‚ã¯åˆ‡æ–­æ‰±ã„ã¨ã™ã‚‹
+			// ƒGƒ‰[”­¶‚ÍØ’fˆµ‚¢‚Æ‚·‚é
 		} finally { handleDisconnection(); }
 	}
 
 	/**
-	 * ã‚µãƒ¼ãƒãƒ¼ã‹ã‚‰å—ä¿¡ã—ãŸã‚³ãƒãƒ³ãƒ‰ã‚’è§£æã—ã€é©åˆ‡ãªå‡¦ç†ã‚’å®Ÿè¡Œã—ã¾ã™ã€‚
+	 * ƒT[ƒo[‚©‚çóM‚µ‚½ƒRƒ}ƒ“ƒh‚ğ‰ğÍ‚µA“KØ‚Èˆ—‚ğÀs‚µ‚Ü‚·B
 	 *
-	 * @param cmd ã‚³ãƒãƒ³ãƒ‰æ–‡å­—åˆ—
-	 * @param tokens ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿é…åˆ—
+	 * @param cmd ƒRƒ}ƒ“ƒh•¶š—ñ
+	 * @param tokens ƒpƒ‰ƒ[ƒ^”z—ñ
 	 */
 	private void processCommand(String cmd, String[] tokens) {
 		try {
 			if (cmd.equals("START")) {
-				// åˆæœŸæ¥ç¶šæ™‚ï¼šè‡ªåˆ†ã®IDã‚’å—ä¿¡
+				// ‰ŠúÚ‘±F©•ª‚ÌID‚ğóM
 				myId = Integer.parseInt(tokens[1]);
 				players.put(myId, new Player(MAP_X + 100, MAP_Y + 200, Color.BLUE));
 			} else if (cmd.equals("MOVE")) {
-				// ä»–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•æƒ…å ±å—ä¿¡
+				// ‘¼ƒvƒŒƒCƒ„[‚ÌˆÚ“®î•ñóM
 				int x = Integer.parseInt(tokens[1]); int y = Integer.parseInt(tokens[2]);
 				double angle = Double.parseDouble(tokens[3]); int hp = Integer.parseInt(tokens[4]);
 				boolean isReloading = Boolean.parseBoolean(tokens[5]);
@@ -473,7 +472,7 @@ public class ActionClient extends JFrame {
 					p.isReloading = isReloading; p.reloadTimer = reloadTimer;
 				}
 			} else if (cmd.equals("SHOT")) {
-				// å¼¾ç™ºå°„æƒ…å ±å—ä¿¡
+				// ’e”­Ëî•ñóM
 				if (currentState == GameState.PLAYING) {
 					int bId = Integer.parseInt(tokens[1]);
 					double x = Double.parseDouble(tokens[2]);
@@ -484,22 +483,22 @@ public class ActionClient extends JFrame {
 					bullets.add(new Bullet(bId, x, y, angle, speed, id));
 				}
 			} else if (cmd.equals("BULLET_HIT")) {
-				// å¼¾ã®å‘½ä¸­ï¼ˆæ¶ˆå¤±ï¼‰æƒ…å ±å—ä¿¡
+				// ’e‚Ì–½’†iÁ¸jî•ñóM
 				int targetBulletId = Integer.parseInt(tokens[1]);
 				bullets.removeIf(b -> b.id == targetBulletId);
 
 			} else if (cmd.equals("LEAVE")) {
-				// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åˆ‡æ–­æƒ…å ±å—ä¿¡
+				// ƒvƒŒƒCƒ„[Ø’fî•ñóM
 				int id = Integer.parseInt(tokens[1]);
 				players.remove(id); joinedPlayers.remove(id);
 			} else if (cmd.equals("DEAD")) {
-				// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ­»äº¡æƒ…å ±å—ä¿¡
+				// ƒvƒŒƒCƒ„[€–Sî•ñóM
 				if (currentState == GameState.PLAYING) {
 					int deadPlayerId = Integer.parseInt(tokens[1]);
 					if (deadPlayerId != myId) setGameOver("YOU WIN");
 				}
 			} else if (cmd.equals("JOIN")) {
-				// ãƒ­ãƒ“ãƒ¼ã¸ã®å‚åŠ æƒ…å ±å—ä¿¡
+				// ƒƒr[‚Ö‚ÌQ‰Áî•ñóM
 				int gameId = Integer.parseInt(tokens[1]); int playerId = Integer.parseInt(tokens[2]);
 				if (gameId == TARGET_GAME_ID) {
 					joinedPlayers.add(playerId);
@@ -508,7 +507,7 @@ public class ActionClient extends JFrame {
 					}
 				}
 			} else if (cmd.equals("MAP_DATA")) {
-				// ãƒãƒƒãƒ—ï¼ˆéšœå®³ç‰©ï¼‰æƒ…å ±å—ä¿¡
+				// ƒ}ƒbƒviáŠQ•¨jî•ñóM
 				obstacles.clear();
 				for (int i = 1; i < tokens.length - 1; i += 4) {
 					try {
@@ -517,7 +516,7 @@ public class ActionClient extends JFrame {
 						obstacles.add(new Line2D.Double(x1, y1, x2, y2));
 					} catch(Exception e) { break; }
 				}
-				// ä½ç½®ã®åˆæœŸåŒ–ï¼ˆå†é…ç½®ï¼‰
+				// ˆÊ’u‚Ì‰Šú‰»iÄ”z’uj
 				int minId = Integer.MAX_VALUE;
 				for(int id : players.keySet()) minId = Math.min(minId, id);
 				Player me = players.get(myId);
@@ -530,12 +529,12 @@ public class ActionClient extends JFrame {
 	}
 
 	// ==========================================
-	//  å†…éƒ¨ã‚¯ãƒ©ã‚¹
+	//  “à•”ƒNƒ‰ƒX
 	// ==========================================
 
 	/**
-	 * ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¯ãƒ©ã‚¹ã€‚
-	 * ä½ç½®ã€HPã€å¼¾æ•°ã€ãƒªãƒ­ãƒ¼ãƒ‰çŠ¶æ…‹ãªã©ã‚’ç®¡ç†ã—ã€æç”»ã‚‚æ‹…å½“ã—ã¾ã™ã€‚
+	 * ƒvƒŒƒCƒ„[ƒNƒ‰ƒXB
+	 * ˆÊ’uAHPA’e”AƒŠƒ[ƒhó‘Ô‚È‚Ç‚ğŠÇ—‚µA•`‰æ‚à’S“–‚µ‚Ü‚·B
 	 */
 	class Player {
 		double x, y, angle; int hp = PLAYER_MAX_HP; Color color;
@@ -546,15 +545,15 @@ public class ActionClient extends JFrame {
 
 		public Player(double x, double y, Color c) { this.x = x; this.y = y; this.color = c; }
 
-		/** çŠ¶æ…‹ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™ */
+		/** ó‘Ô‚ğƒŠƒZƒbƒg‚µ‚Ü‚· */
 		public void reset() { hp = PLAYER_MAX_HP; currentAmmo = maxAmmo; isReloading = false; reloadTimer = 0; }
 
 		/**
-		 * ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®çŠ¶æ…‹ã‚’æ›´æ–°ã—ã¾ã™ï¼ˆç§»å‹•ã€ãƒªãƒ­ãƒ¼ãƒ‰å‡¦ç†ï¼‰ã€‚
-		 * @param mx ãƒã‚¦ã‚¹Xåº§æ¨™
-		 * @param my ãƒã‚¦ã‚¹Yåº§æ¨™
-		 * @param panel ã‚²ãƒ¼ãƒ ãƒ‘ãƒãƒ«
-		 * @param obstacles éšœå®³ç‰©ãƒªã‚¹ãƒˆ
+		 * ƒvƒŒƒCƒ„[‚Ìó‘Ô‚ğXV‚µ‚Ü‚·iˆÚ“®AƒŠƒ[ƒhˆ—jB
+		 * @param mx ƒ}ƒEƒX X À•W
+		 * @param my ƒ}ƒEƒX Y À•W
+		 * @param panel ƒQ[ƒ€ƒpƒlƒ‹
+		 * @param obstacles áŠQ•¨ƒŠƒXƒg
 		 */
 		public void update(int mx, int my, GamePanel panel, ArrayList<Line2D.Double> obstacles) {
 			double nextX = x;
@@ -588,24 +587,24 @@ public class ActionClient extends JFrame {
 			}
 		}
 
-		/** ãƒªãƒ­ãƒ¼ãƒ‰ã‚’é–‹å§‹ã—ã¾ã™ */
+		/** ƒŠƒ[ƒh‚ğŠJn‚µ‚Ü‚· */
 		public void startReload() { if (currentAmmo < maxAmmo && !isReloading) { isReloading = true; reloadTimer = 0; } }
 
-		/** å½“ãŸã‚Šåˆ¤å®šç”¨ã®çŸ©å½¢ã‚’è¿”ã—ã¾ã™ */
+		/** “–‚½‚è”»’è—p‚Ì‹éŒ`‚ğ•Ô‚µ‚Ü‚· */
 		public Rectangle getBounds() { return new Rectangle((int)x-15, (int)y-15, 30, 30); }
 
 		/**
-		 * ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’æç”»ã—ã¾ã™ã€‚
-		 * @param g2d Graphics2Dã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+		 * ƒvƒŒƒCƒ„[‚ğ•`‰æ‚µ‚Ü‚·B
+		 * @param g2d Graphics2DƒIƒuƒWƒFƒNƒg
 		 */
 		public void draw(Graphics2D g2d) {
 			AffineTransform old = g2d.getTransform(); g2d.translate(x, y);
 
-			// HPãƒãƒ¼
+			// HP ƒo[
 			g2d.setColor(Color.RED); g2d.fillRect(-20, -35, 40, 5);
 			g2d.setColor(Color.GREEN); g2d.fillRect(-20, -35, (int)(40 * (hp / (double)PLAYER_MAX_HP)), 5);
 
-			// ãƒªãƒ­ãƒ¼ãƒ‰ãƒãƒ¼
+			// ƒŠƒ[ƒhƒo[
 			if (isReloading) {
 				g2d.setColor(Color.GRAY); g2d.fillRect(-20, -45, 40, 5);
 				g2d.setColor(Color.YELLOW);
@@ -613,7 +612,7 @@ public class ActionClient extends JFrame {
 				g2d.fillRect(-20, -45, (int)(40 * progress), 5);
 			}
 
-			// æœ¬ä½“æç”» (å›è»¢)
+			// –{‘Ì•`‰æ (‰ñ“])
 			g2d.rotate(angle);
 
 			BufferedImage img = (this.color == Color.BLUE) ? imgPlayerMe : imgPlayerEnemy;
@@ -623,54 +622,54 @@ public class ActionClient extends JFrame {
 			} else {
 				if (isReloading) g2d.setColor(color.darker()); else g2d.setColor(color);
 				g2d.fillRect(-size, -size, size*2, size*2);
-				g2d.setColor(Color.BLACK); g2d.drawLine(0, 0, 25, 0); // éŠƒå£
+				g2d.setColor(Color.BLACK); g2d.drawLine(0, 0, 25, 0); // eŒû
 			}
 			g2d.setTransform(old);
 		}
 	}
 
 	/**
-	 * å¼¾ã‚¯ãƒ©ã‚¹ã€‚
-	 * å¼¾ã®ç§»å‹•è¨ˆç®—ã¨æç”»ã‚’æ‹…å½“ã—ã¾ã™ã€‚
+	 * ’eƒNƒ‰ƒXB
+	 * ’e‚ÌˆÚ“®ŒvZ‚Æ•`‰æ‚ğ’S“–‚µ‚Ü‚·B
 	 */
 	class Bullet {
-		int id; // å¼¾ID
+		int id; // ’eID
 		double x, y, angle, speed; int ownerId;
-		int bounceCount = 0; // åå°„å›æ•°ã‚«ã‚¦ãƒ³ãƒˆ
-		int lifeTimer = 0;   // ç”Ÿå­˜æ™‚é–“(ãƒ•ãƒ¬ãƒ¼ãƒ æ•°)
+		int bounceCount = 0; // ”½Ë‰ñ”ƒJƒEƒ“ƒg
+		int lifeTimer = 0;   // ¶‘¶ŠÔ(ƒtƒŒ[ƒ€”)
 
 		public Bullet(int id, double x, double y, double angle, double speed, int ownerId) {
 			this.id = id;
 			this.x = x; this.y = y; this.angle = angle; this.speed = speed; this.ownerId = ownerId;
 		}
 
-		/** å¼¾ã®ä½ç½®ã‚’æ›´æ–°ã—ã¾ã™ */
+		/** ’e‚ÌˆÊ’u‚ğXV‚µ‚Ü‚· */
 		public void update() {
 			lifeTimer++;
 			x += Math.cos(angle) * speed;
 			y += Math.sin(angle) * speed;
 		}
 
-		/** å¼¾ã‚’æç”»ã—ã¾ã™ */
+		/** ’e‚ğ•`‰æ‚µ‚Ü‚· */
 		public void draw(Graphics2D g2d) { g2d.setColor(Color.YELLOW); g2d.fillOval((int)x-BULLET_SIZE/2, (int)y-BULLET_SIZE/2, BULLET_SIZE, BULLET_SIZE); }
 	}
 
 	/**
-	 * ã‚²ãƒ¼ãƒ ç”»é¢ã‚’æç”»ã™ã‚‹ãƒ‘ãƒãƒ«ã‚¯ãƒ©ã‚¹ã€‚
-	 * ã‚­ãƒ¼å…¥åŠ›ã¨ãƒã‚¦ã‚¹å…¥åŠ›ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã‚‚å…¼ã­ã¾ã™ã€‚
+	 * ƒQ[ƒ€‰æ–Ê‚ğ•`‰æ‚·‚éƒpƒlƒ‹ƒNƒ‰ƒXB
+	 * ƒL[“ü—Í‚Æƒ}ƒEƒX“ü—Í‚ÌƒCƒxƒ“ƒgƒŠƒXƒi[‚àŒ“‚Ë‚Ü‚·B
 	 */
 	class GamePanel extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 		boolean keyW, keyS, keyA, keyD; int mouseX, mouseY;
 
-		// ãƒãƒƒãƒ—é¸æŠãƒœã‚¿ãƒ³ã®å®šç¾©
-		Rectangle startButtonRect = new Rectangle(300, 450, 200, 60); // STARTãƒœã‚¿ãƒ³ä½ç½®èª¿æ•´
+		// ƒ}ƒbƒv‘I‘ğƒ{ƒ^ƒ“‚Ì’è‹`
+		Rectangle startButtonRect = new Rectangle(300, 450, 200, 60); // STARTƒ{ƒ^ƒ“ˆÊ’u’²®
 		Rectangle[] mapButtons = new Rectangle[3];
 
 		public GamePanel() {
 			setFocusable(true); setBackground(Color.DARK_GRAY);
 			addKeyListener(this); addMouseListener(this); addMouseMotionListener(this);
 
-			// ãƒãƒƒãƒ—é¸æŠãƒœã‚¿ãƒ³ã®é…ç½®
+			// ƒ}ƒbƒv‘I‘ğƒ{ƒ^ƒ“‚Ì”z’u
 			int btnW = 120; int btnH = 40; int startX = 200; int y = 380;
 			mapButtons[0] = new Rectangle(startX, y, btnW, btnH);
 			mapButtons[1] = new Rectangle(startX + 140, y, btnW, btnH);
@@ -688,18 +687,18 @@ public class ActionClient extends JFrame {
 			else if (currentState == GameState.RESULT) { drawGameScreen(g2d); drawResultScreen(g2d); }
 		}
 
-		/** ã‚¿ã‚¤ãƒˆãƒ«ç”»é¢ã®æç”» */
+		/** ƒ^ƒCƒgƒ‹‰æ–Ê‚Ì•`‰æ */
 		private void drawTitleScreen(Graphics2D g2d) {
 			g2d.setColor(Color.CYAN); g2d.setFont(new Font("Arial", Font.BOLD, 50));
 			String title = "BATTLE GAME"; int tw = g2d.getFontMetrics().stringWidth(title);
 			g2d.drawString(title, (800 - tw) / 2, 200);
 
-			// ãƒãƒƒãƒ—é¸æŠãƒœã‚¿ãƒ³æç”»
+			// ƒ}ƒbƒv‘I‘ğƒ{ƒ^ƒ“•`‰æ
 			g2d.setFont(new Font("Arial", Font.BOLD, 16));
 			String[] labels = {"Random", "Map A", "Map B"};
 			for (int i = 0; i < 3; i++) {
 				Rectangle btn = mapButtons[i];
-				if (selectedMapType == i) g2d.setColor(Color.YELLOW); // é¸æŠä¸­ã¯é»„è‰²
+				if (selectedMapType == i) g2d.setColor(Color.YELLOW); // ‘I‘ğ’†‚Í‰©F
 				else g2d.setColor(Color.LIGHT_GRAY);
 				g2d.fill(btn);
 
@@ -714,7 +713,7 @@ public class ActionClient extends JFrame {
 			g2d.drawString("START", startButtonRect.x + 50, startButtonRect.y + 40);
 		}
 
-		/** å¾…æ©Ÿç”»é¢ã®æç”» */
+		/** ‘Ò‹@‰æ–Ê‚Ì•`‰æ */
 		private void drawWaitingScreen(Graphics2D g2d) {
 			g2d.setColor(Color.WHITE); g2d.setFont(new Font("Arial", Font.BOLD, 30));
 			String msg = "WAITING FOR OPPONENT..."; int tw = g2d.getFontMetrics().stringWidth(msg);
@@ -723,20 +722,20 @@ public class ActionClient extends JFrame {
 			g2d.drawString("Joined: " + joinedPlayers.size(), (800 - tw) / 2, 350);
 		}
 
-		/** ã‚²ãƒ¼ãƒ ãƒ—ãƒ¬ã‚¤ç”»é¢ã®æç”» */
+		/** ƒQ[ƒ€ƒvƒŒƒC‰æ–Ê‚Ì•`‰æ */
 		private void drawGameScreen(Graphics2D g2d) {
 			g2d.setColor(Color.WHITE); g2d.setStroke(new BasicStroke(3));
 			g2d.drawRect(MAP_X, MAP_Y, MAP_WIDTH, MAP_HEIGHT);
 			g2d.setColor(Color.LIGHT_GRAY); g2d.setStroke(new BasicStroke(5));
 			for (Line2D.Double wall : obstacles) g2d.draw(wall);
 			g2d.setStroke(new BasicStroke(1));
-			// ã‚¢ã‚¤ãƒ†ãƒ æç”»ãƒ«ãƒ¼ãƒ—ã‚’å‰Šé™¤
+			// ƒAƒCƒeƒ€•`‰æƒ‹[ƒv‚ğíœ
 			for (Player p : players.values()) p.draw(g2d);
 			for (Bullet b : bullets) b.draw(g2d);
 			drawGameStatus(g2d);
 		}
 
-		/** ã‚²ãƒ¼ãƒ å†…ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ï¼ˆæ™‚é–“ã€å¼¾æ•°ï¼‰ã®æç”» */
+		/** ƒQ[ƒ€“àƒXƒe[ƒ^ƒXiŠÔA’e”j‚Ì•`‰æ */
 		private void drawGameStatus(Graphics2D g2d) {
 			int textY = MAP_Y + MAP_HEIGHT + 40;
 			g2d.setColor(Color.WHITE); g2d.setFont(new Font("Monospaced", Font.BOLD, 24));
@@ -751,7 +750,7 @@ public class ActionClient extends JFrame {
 			}
 		}
 
-		/** çµæœç”»é¢ã®æç”» */
+		/** Œ‹‰Ê‰æ–Ê‚Ì•`‰æ */
 		private void drawResultScreen(Graphics2D g2d) {
 			g2d.setColor(new Color(0, 0, 0, 150)); g2d.fillRect(0, 0, 800, 650);
 			g2d.setFont(new Font("Arial", Font.BOLD, 60));
@@ -765,11 +764,11 @@ public class ActionClient extends JFrame {
 			g2d.drawString(guide, (800 - gw) / 2, 400);
 		}
 
-		// --- ãƒã‚¦ã‚¹ãƒ»ã‚­ãƒ¼å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆå‡¦ç† ---
+		// --- ƒ}ƒEƒXEƒL[“ü—ÍƒCƒxƒ“ƒgˆ— ---
 		public void mousePressed(MouseEvent e) {
 			int mx = e.getX(); int my = e.getY();
 			if (currentState == GameState.TITLE) {
-				// ãƒãƒƒãƒ—ãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯åˆ¤å®š
+				// ƒ}ƒbƒvƒ{ƒ^ƒ“ƒNƒŠƒbƒN”»’è
 				for (int i = 0; i < 3; i++) {
 					if (mapButtons[i].contains(mx, my)) {
 						selectedMapType = i;
@@ -784,7 +783,7 @@ public class ActionClient extends JFrame {
 				if (me.isReloading) return;
 				if (me.currentAmmo > 0) {
 					me.currentAmmo--;
-					// å¼¾IDã‚’ç”Ÿæˆã—ã¦é€ä¿¡
+					// ’eID‚ğ¶¬‚µ‚Ä‘—M
 					int bulletId = (int)(Math.random() * 1000000);
 					out.println("SHOT " + bulletId + " " + me.x + " " + me.y + " " + me.angle + " " + BULLET_SPEED);
 				} else { me.startReload(); }
