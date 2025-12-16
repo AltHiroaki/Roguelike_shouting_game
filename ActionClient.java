@@ -12,7 +12,6 @@ import java.util.concurrent.*;
 /**
  * アクションゲームのクライアントクラス。
  * サーバーと通信を行い、ゲームロジックと描画を管理します。
- * 弾の処理に「オブジェクトプーリング」を導入し、メモリ負荷を軽減しています。
  * アイテム機能は削除済みです。
  */
 public class ActionClient extends JFrame {
@@ -530,7 +529,7 @@ public class ActionClient extends JFrame {
 		public void draw(Graphics2D g2d) {
 			AffineTransform old = g2d.getTransform(); g2d.translate(x, y);
 
-			// HPバー
+			// HP バー
 			g2d.setColor(Color.RED); g2d.fillRect(-20, -35, 40, 5);
 			g2d.setColor(Color.GREEN); g2d.fillRect(-20, -35, (int)(40 * (hp / (double)PLAYER_MAX_HP)), 5);
 
