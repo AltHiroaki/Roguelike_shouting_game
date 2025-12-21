@@ -5,5 +5,9 @@
     <file url="file://$PROJECT_DIR$/MyServer2.java" charset="Shift_JIS" />
     <file url="file://$PROJECT_DIR$/game/ActionClient.java" charset="Shift_JIS" />
     <file url="file://$PROJECT_DIR$/game/Bullet.java" charset="Shift_JIS" />
+    <file url="file://$PROJECT_DIR$/game/GameConstants.java" charset="Shift_JIS" />
+    <file url="file://$PROJECT_DIR$/game/Player.java" charset="Shift_JIS" />
+    <file url="file://$PROJECT_DIR$/game/PowerUp.java" charset="Shift_JIS" />
+    <file url="file://$PROJECT_DIR$/game/Weapon.java" charset="Shift_JIS" />
   </component>
 </project>
