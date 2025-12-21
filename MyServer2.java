@@ -3,15 +3,19 @@ import java.net.Socket;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 
-// スレッド部（各クライアントの通信処理）
+/**
+ * アクションゲーム用サーバークラス。
+ * マジックナンバーを排除。
+ */
 class ClientProcThread extends Thread {
-	private int number; // 自分の番号
+	private int number;
 	private Socket incoming;
 	private InputStreamReader myIsr;
 	private BufferedReader myIn;
 	private PrintWriter myOut;
-	private String myName; // 接続者の名前
+	private String myName;
 
 	public ClientProcThread(int n, Socket i, InputStreamReader isr, BufferedReader in, PrintWriter out) {
 		number = n;
@@ -23,104 +27,84 @@ class ClientProcThread extends Thread {
 
 	public void run() {
 		try {
-			// アクションゲーム用に "START 番号" という形式で送る
 			myOut.println("START " + number);
+			myName = "Player" + number;
 
-			// 名前入力待ちは削除（アクションゲームでは即開始するため）
-			// myName = myIn.readLine();
-			myName = "Player" + number; // 自動で仮の名前をつける
-
-			while (true) { // 無限ループで、ソケットへの入力を監視する
+			while (true) {
 				String str = myIn.readLine();
-
-				// 高速化のためログ出力はコメントアウト
-				// System.out.println("Received from client No."+number+"("+myName+"), Messages: "+str);
-
 				if (str != null) {
 					if (str.toUpperCase().equals("BYE")) {
 						myOut.println("Good bye!");
 						break;
 					}
-
-					// メッセージの末尾に「送信者のID」を付け足して全員に送る
-					// これにより、受信側は「誰が動いたか」がわかるようになる
 					MyServer2.SendAll(str + " " + number, myName);
 				}
 			}
 		} catch (Exception e) {
-			// ここにプログラムが到達するときは、接続が切れたとき
 			System.out.println("Disconnect from client No." + number + "(" + myName + ")");
-			MyServer2.SetFlag(number, false); // 接続が切れたのでフラグを下げる
-
-			// 切断情報を全員に通知（LEAVEコマンド）
+			MyServer2.SetFlag(number, false);
 			MyServer2.SendAll("LEAVE " + number + " " + number, myName);
 		}
 	}
 }
 
 class MyServer2 {
+	// 内部定数として定義
+	private static final int PORT = 10000;
+	private static final int MAX_CONNECTION = 100;
 
-	private static int maxConnection = 100; // 最大接続数
-	private static Socket[] incoming; // 受付用のソケット
-	private static boolean[] flag; // 接続中かどうかのフラグ
-	private static InputStreamReader[] isr; // 入力ストリーム用の配列
-	private static BufferedReader[] in; // バッファリングをによりテキスト読み込み用の配列
-	private static PrintWriter[] out; // 出力ストリーム用の配列
-	private static ClientProcThread[] myClientProcThread; // スレッド用の配列
-	private static int member; // 接続しているメンバーの数
+	private static Socket[] incoming;
+	private static boolean[] flag;
+	private static InputStreamReader[] isr;
+	private static BufferedReader[] in;
+	private static PrintWriter[] out;
+	private static ClientProcThread[] myClientProcThread;
+	private static int member;
 
-	// 全員にメッセージを送る
 	public static void SendAll(String str, String myName) {
-		// 送られた来たメッセージを接続している全員に配る
 		for (int i = 1; i <= member; i++) {
 			if (flag[i] == true) {
 				out[i].println(str);
-				out[i].flush(); // バッファをはき出す＝＞バッファにある全てのデータをすぐに送信する
-
-				// 高速化のためログ出力はコメントアウト
-				// System.out.println("Send messages to client No."+i);
+				out[i].flush();
 			}
 		}
 	}
 
-	// フラグの設定を行う
 	public static void SetFlag(int n, boolean value) {
 		flag[n] = value;
 	}
 
-	// main プログラム
 	public static void main(String[] args) {
-		// 必要な配列を確保する
-		incoming = new Socket[maxConnection];
-		flag = new boolean[maxConnection];
-		isr = new InputStreamReader[maxConnection];
-		in = new BufferedReader[maxConnection];
-		out = new PrintWriter[maxConnection];
-		myClientProcThread = new ClientProcThread[maxConnection];
+		// 定数を使用
+		incoming = new Socket[MAX_CONNECTION];
+		flag = new boolean[MAX_CONNECTION];
+		isr = new InputStreamReader[MAX_CONNECTION];
+		in = new BufferedReader[MAX_CONNECTION];
+		out = new PrintWriter[MAX_CONNECTION];
+		myClientProcThread = new ClientProcThread[MAX_CONNECTION];
 
 		int n = 1;
-		member = 0; // 誰も接続していないのでメンバー数は０
+		member = 0;
 
 		try {
-			System.out.println("=== Action Game Server (MyServer2 Mod) Started ===");
-			ServerSocket server = new ServerSocket(10000); // 10000番ポートを利用する
+			System.out.println("=== Action Game Server (No Magic Numbers) Started ===");
+			ServerSocket server = new ServerSocket(PORT); // 定数使用
 			while (true) {
 				incoming[n] = server.accept();
 				flag[n] = true;
 				System.out.println("Accept client No." + n);
 
-				// 必要な入出力ストリームを作成する (UTF-8を指定)
 				isr[n] = new InputStreamReader(incoming[n].getInputStream(), "UTF-8");
 				in[n] = new BufferedReader(isr[n]);
-				out[n] = new PrintWriter(new java.io.OutputStreamWriter(incoming[n].getOutputStream(), "UTF-8"), true);
+				out[n] = new PrintWriter(new OutputStreamWriter(incoming[n].getOutputStream(), "UTF-8"), true);
 
-				myClientProcThread[n] = new ClientProcThread(n, incoming[n], isr[n], in[n], out[n]); // 必要なパラメータを渡しスレッドを作成
-				myClientProcThread[n].start(); // スレッドを開始する
-				member = n; // メンバーの数を更新する
+				myClientProcThread[n] = new ClientProcThread(n, incoming[n], isr[n], in[n], out[n]);
+				myClientProcThread[n].start();
+				member = n;
 				n++;
 			}
 		} catch (Exception e) {
-			System.err.println("ソケット作成時にエラーが発生しました: " + e);
+			System.err.println("ソケット作成時にエラーが発生: " + e);
 		}
 	}
 }
