@@ -1,4 +1,4 @@
-package game; // <--- これを追加
+package game;
 
 public class GameConstants {
 	// サーバー設定
