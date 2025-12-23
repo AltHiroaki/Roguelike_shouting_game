@@ -88,14 +88,16 @@ public class Weapon {
 		}
 	}
 
+	// tryShoot メソッドを以下の内容に書き換えてください
+
 	public void tryShoot(PrintWriter out, int myId) {
+		// クールダウン中は撃てない
 		if (fireTimer > 0) return;
 
+		// 弾切れ・リロード中の処理
 		if (isReloading || currentAmmo <= 0) {
 			if (!isReloading && currentAmmo < maxAmmo) startReload();
-			if (currentAmmo <= 0 && owner.hasSkillEmergencyDefense) {
-				owner.tryGuard();
-			}
+			// ここにあった緊急防御の判定は消す（空撃ち判定になってしまうため）
 			return;
 		}
 
@@ -106,7 +108,15 @@ public class Weapon {
 		performShot(out, myId);
 		burstQueue--;
 
-		if (currentAmmo <= 0) startReload();
+		// 弾を撃った結果、0になったらリロード＆緊急防御チェック
+		if (currentAmmo <= 0) {
+			startReload();
+
+			// 緊急防御スキル持ちなら、クールダウン無視でガード発動
+			if (owner.hasSkillEmergencyDefense) {
+				owner.forceGuard();
+			}
+		}
 	}
 
 	private void performShot(PrintWriter out, int myId) {

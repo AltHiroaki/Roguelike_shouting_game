@@ -99,10 +99,53 @@ public class Player {
 				teleport();
 				cooldownAdd += 120;
 			}
-			// ColdPresenceの処理を削除
 
 			guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
 		}
+	}
+
+	/**
+	 * 緊急防御用：クールダウンを無視してガードを発動する
+	 */
+	public void forceGuard() {
+		// すでにガード中なら何もしない
+		if (isGuarding) return;
+
+		// ガード発動
+		isGuarding = true;
+		guardTimer = GUARD_DURATION;
+
+		// 通常のガードと同じ追加効果の処理
+		int cooldownAdd = 0;
+		if (hasSkillTacticalReload) {
+			weapon.currentAmmo = weapon.maxAmmo;
+			cooldownAdd += 120;
+		}
+		if (hasSkillExclusiveDefense) {
+			exclusiveDefenseTimer = 120;
+			cooldownAdd += 120;
+		}
+		if (hasSkillInvisible) {
+			invisibleTimer = 30;
+			cooldownAdd += 300;
+		}
+		if (hasSkillTeleport) {
+			// テレポート処理（privateメソッドなので、中身をコピーするか、teleport()をprotected/publicにするか、
+			// tryGuard内のロジックを共通化するのが綺麗ですが、今回はコピーで対応します）
+			double dist = 150.0;
+			double tx = x + Math.cos(angle) * dist;
+			double ty = y + Math.sin(angle) * dist;
+			if (tx < MAP_X) tx = MAP_X + 10;
+			if (tx > MAP_X + MAP_WIDTH) tx = MAP_X + MAP_WIDTH - 10;
+			if (ty < MAP_Y) ty = MAP_Y + 10;
+			if (ty > MAP_Y + MAP_HEIGHT) ty = MAP_Y + MAP_HEIGHT - 10;
+			x = tx; y = ty;
+
+			cooldownAdd += 120;
+		}
+
+		// 発動後はクールタイムが発生する
+		guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
 	}
 
 	private void teleport() {
