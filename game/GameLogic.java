@@ -25,7 +25,7 @@ public class GameLogic {
 	// パワーアップ関連
 	public ArrayList<PowerUp> presentedPowerUps = new ArrayList<>();
 
-	// ★追加: 前回のマウス状態を記録するフラグ
+	// 前回のマウス状態を記録するフラグ
 	private boolean wasMousePressed = false;
 
 	public GameLogic() {
@@ -41,7 +41,7 @@ public class GameLogic {
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
-		// ★修正: 長押し連射を防止（クリックした瞬間だけ反応）
+		// 長押し連射を防止（クリックした瞬間だけ反応）
 		if (input.isMousePressed && !wasMousePressed) {
 			me.weapon.tryShoot(out, myId);
 		}
@@ -110,7 +110,7 @@ public class GameLogic {
 		int minId = Integer.MAX_VALUE;
 		for(int id : players.keySet()) minId = Math.min(minId, id);
 
-		// ★修正: 「自分(me)」だけでなく「全員(players.values())」の位置をリセットする
+		// 「自分(me)」だけでなく「全員(players.values())」の位置をリセットする
 		for (Player p : players.values()) {
 			if (p.id == minId) {
 				// ホスト（Player1）の位置

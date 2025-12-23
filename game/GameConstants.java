@@ -18,8 +18,8 @@ public class GameConstants {
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
 
-	// UIレイアウト
-	public static final int UI_AMMO_Y_OFFSET = 30; // 弾数表示のY位置オフセット
+	// UI レイアウト
+	public static final int UI_AMMO_Y_OFFSET = 30; // 弾数表示の Y位置オフセット
 	public static final int UI_BAR_WIDTH = 40;     // HP/リロードバーの幅
 	public static final int UI_BAR_HEIGHT = 5;     // HP/リロードバーの高さ
 	public static final int UI_BAR_HP_Y_OFFSET = -35;

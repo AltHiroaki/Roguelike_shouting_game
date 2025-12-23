@@ -2,13 +2,13 @@ package game;
 
 import javax.swing.*;
 import java.awt.Color;
-import java.awt.geom.*; // ★これが必要でした（Line2D用）
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.*;
 import java.net.*;
 import javax.swing.SwingUtilities;
-import java.util.*; // ★これが必要でした（ScannerやStringTokenizer用）
+import java.util.*;
 
 import static game.GameConstants.*;
 

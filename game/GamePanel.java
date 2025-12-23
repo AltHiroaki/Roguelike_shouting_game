@@ -27,7 +27,7 @@ public class GamePanel extends JPanel {
 		addMouseListener(input);
 		addMouseMotionListener(input);
 
-		// UIクリック判定用
+		// UI クリック判定用
 		addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) { handleUIMouse(e.getX(), e.getY()); }
 		});

@@ -31,8 +31,10 @@ class PowerUpFactory {
 		});
 		all.add(new PowerUp("Small Boy", "Rogue", "Evasion UP", "HP--") {
 			public void apply(Player p) {
-				p.maxHp = POWERUP_ROGUE_FIXED_HP; p.hp = p.maxHp;
-				p.size *= POWERUP_ROGUE_SIZE_MULT; p.speed *= POWERUP_ROGUE_SPEED_MULT;
+				p.maxHp = POWERUP_ROGUE_FIXED_HP;
+				p.hp = p.maxHp;
+				p.size *= POWERUP_ROGUE_SIZE_MULT;
+				p.speed *= POWERUP_ROGUE_SPEED_MULT;
 			}
 		});
 

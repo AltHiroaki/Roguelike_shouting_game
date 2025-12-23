@@ -6,7 +6,7 @@ import static game.GameConstants.*;
 
 public class MapGenerator {
 
-	// マップタイプID（ActionClientから移動）
+	// マップタイプID
 	public static final int MAP_TYPE_C = 0;
 	public static final int MAP_TYPE_A = 1;
 	public static final int MAP_TYPE_B = 2;
