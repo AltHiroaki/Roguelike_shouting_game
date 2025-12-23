@@ -5,10 +5,6 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
 
-/**
- * アクションゲーム用サーバークラス。
- * マジックナンバーを排除。
- */
 class ClientProcThread extends Thread {
 	private int number;
 	private Socket incoming;
@@ -49,7 +45,6 @@ class ClientProcThread extends Thread {
 }
 
 class MyServer2 {
-	// 内部定数として定義
 	private static final int PORT = 10000;
 	private static final int MAX_CONNECTION = 100;
 
@@ -75,7 +70,6 @@ class MyServer2 {
 	}
 
 	public static void main(String[] args) {
-		// 定数を使用
 		incoming = new Socket[MAX_CONNECTION];
 		flag = new boolean[MAX_CONNECTION];
 		isr = new InputStreamReader[MAX_CONNECTION];
@@ -87,8 +81,8 @@ class MyServer2 {
 		member = 0;
 
 		try {
-			System.out.println("=== Action Game Server (No Magic Numbers) Started ===");
-			ServerSocket server = new ServerSocket(PORT); // 定数使用
+			System.out.println("=== Action Game Server (UTF-8) Started ===");
+			ServerSocket server = new ServerSocket(PORT);
 			while (true) {
 				incoming[n] = server.accept();
 				flag[n] = true;
@@ -104,7 +98,7 @@ class MyServer2 {
 				n++;
 			}
 		} catch (Exception e) {
-			System.err.println("ソケット作成時にエラーが発生: " + e);
+			System.err.println("Error: " + e);
 		}
 	}
 }

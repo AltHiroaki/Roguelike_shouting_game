@@ -6,7 +6,6 @@ import static game.GameConstants.*;
 
 public class MapGenerator {
 
-	// マップタイプID
 	public static final int MAP_TYPE_C = 0;
 	public static final int MAP_TYPE_A = 1;
 	public static final int MAP_TYPE_B = 2;
@@ -34,7 +33,7 @@ public class MapGenerator {
 			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + 50, MAP_X + MAP_WIDTH/2, MAP_Y + 150));
 			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 150, MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 50));
 		} else {
-			// MAP_TYPE_C (要塞)
+			// MAP_TYPE_C
 			int cx = MAP_X + MAP_WIDTH / 2;
 			int cy = MAP_Y + MAP_HEIGHT / 2;
 			obstacles.add(new Line2D.Double(cx - MAP_C_CROSS_SIZE, cy, cx + MAP_C_CROSS_SIZE, cy));
@@ -43,7 +42,6 @@ public class MapGenerator {
 			int margin = MAP_C_CORNER_MARGIN;
 			int size = MAP_C_CORNER_SIZE;
 
-			// 四隅
 			addCorner(obstacles, MAP_X + margin, MAP_Y + margin, size, 1, 1);
 			addCorner(obstacles, MAP_X + MAP_WIDTH - margin, MAP_Y + margin, size, -1, 1);
 			addCorner(obstacles, MAP_X + margin, MAP_Y + MAP_HEIGHT - margin, size, 1, -1);
@@ -52,7 +50,6 @@ public class MapGenerator {
 		return obstacles;
 	}
 
-	// L 字を作る補助メソッド
 	private static void addCorner(ArrayList<Line2D.Double> list, int x, int y, int size, int dx, int dy) {
 		list.add(new Line2D.Double(x, y, x + size * dx, y));
 		list.add(new Line2D.Double(x, y, x, y + size * dy));

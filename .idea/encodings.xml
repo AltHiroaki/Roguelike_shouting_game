@@ -9,5 +9,6 @@
     <file url="file://$PROJECT_DIR$/game/Player.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/game/PowerUp.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/game/Weapon.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../networksystem_development/src/Othello/MyClient.java" charset="Shift_JIS" />
   </component>
 </project>

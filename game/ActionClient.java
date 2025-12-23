@@ -13,26 +13,22 @@ import java.util.*;
 import static game.GameConstants.*;
 
 public class ActionClient extends JFrame {
-	// 通信
 	private Socket socket;
 	private PrintWriter out;
 	private BufferedReader in;
 	public int myId;
 
-	// ゲームの部品（ロジック、パネル、入力）
 	public GameLogic logic = new GameLogic();
 	public InputHandler input = new InputHandler();
 	private GamePanel panel;
 	private javax.swing.Timer gameTimer;
 
-	// 状態管理
 	public enum GameState { TITLE, WAITING, PLAYING, ROUND_END_SELECT, ROUND_END_WAIT, COUNTDOWN, GAME_OVER }
 	public GameState currentState = GameState.TITLE;
 
 	public int selectedMapType = MapGenerator.MAP_TYPE_C;
 	public int countdownTimer = 0;
 
-	// 画像
 	public BufferedImage imgPlayerMe, imgPlayerEnemy;
 
 	public ActionClient() {
@@ -44,7 +40,6 @@ public class ActionClient extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 
-		// パネル生成（自分自身とロジックを渡す）
 		panel = new GamePanel(this, logic, input);
 		add(panel);
 
@@ -72,7 +67,6 @@ public class ActionClient extends JFrame {
 		}
 	}
 
-	// === メインループ ===
 	private void gameLoop() {
 		if (currentState == GameState.COUNTDOWN) {
 			countdownTimer--;
@@ -83,7 +77,6 @@ public class ActionClient extends JFrame {
 		panel.repaint();
 	}
 
-	// === アクション（パネルから呼ばれる） ===
 	public void joinGame() {
 		out.println("JOIN " + TARGET_GAME_ID);
 		currentState = GameState.WAITING;
@@ -119,7 +112,6 @@ public class ActionClient extends JFrame {
 		if (logic.players.containsKey(myId)) logic.players.get(myId).sendStatus(out);
 	}
 
-	// === 通信処理 ===
 	private void receiveLoop() {
 		try {
 			String line;
@@ -140,25 +132,57 @@ public class ActionClient extends JFrame {
 				logic.joinedPlayers.add(pid);
 				if (!logic.players.containsKey(pid)) logic.players.put(pid, new Player(pid, 0, 0, COLOR_PLAYER_ENEMY));
 				if (logic.joinedPlayers.size() >= 2 && currentState == GameState.WAITING) startNewMatch();
+			} else if (cmd.equals("LEAVE")) {
+				int leaveId = Integer.parseInt(tokens[1]);
+				if (leaveId != myId) {
+					setGameOver("完全勝利！(相手が退出しました)");
+				}
 			} else if (cmd.equals("MOVE")) {
-				int id = Integer.parseInt(tokens[7]);
+				int id = Integer.parseInt(tokens[10]);
 				if (id != myId) {
 					Player p = logic.players.computeIfAbsent(id, k -> new Player(id, 0, 0, COLOR_PLAYER_ENEMY));
 					p.x = Double.parseDouble(tokens[1]); p.y = Double.parseDouble(tokens[2]);
 					p.angle = Double.parseDouble(tokens[3]); p.hp = Integer.parseInt(tokens[4]);
 					p.weapon.isReloading = Boolean.parseBoolean(tokens[5]); p.weapon.reloadTimer = Integer.parseInt(tokens[6]);
+					p.isGuarding = Boolean.parseBoolean(tokens[7]);
+					p.guardCooldownTimer = Integer.parseInt(tokens[8]);
+					p.invisibleTimer = Boolean.parseBoolean(tokens[9]) ? 10 : 0;
 				}
 			} else if (cmd.equals("STATUS")) {
 				int id = Integer.parseInt(tokens[1]);
 				Player p = logic.players.computeIfAbsent(id, k -> new Player(id, 0, 0, (id==myId)?COLOR_PLAYER_ME:COLOR_PLAYER_ENEMY));
 				p.maxHp = Integer.parseInt(tokens[2]); p.size = Integer.parseInt(tokens[3]);
 			} else if (cmd.equals("SHOT")) {
-				logic.spawnBullet(Integer.parseInt(tokens[1]), Double.parseDouble(tokens[2]), Double.parseDouble(tokens[3]),
-						Double.parseDouble(tokens[4]), Double.parseDouble(tokens[5]), Integer.parseInt(tokens[6]),
-						Integer.parseInt(tokens[7]), Integer.parseInt(tokens[8]), Integer.parseInt(tokens[9]));
+				int bId = Integer.parseInt(tokens[1]);
+				double x = Double.parseDouble(tokens[2]);
+				double y = Double.parseDouble(tokens[3]);
+				double angle = Double.parseDouble(tokens[4]);
+				double speed = Double.parseDouble(tokens[5]);
+				int damage = Integer.parseInt(tokens[6]);
+				int size = Integer.parseInt(tokens[7]);
+				int flags = Integer.parseInt(tokens[8]);
+				int ownerId = Integer.parseInt(tokens[9]);
+				int extraBounces = (tokens.length > 10) ? Integer.parseInt(tokens[10]) : 0;
+
+				logic.spawnBullet(bId, x, y, angle, speed, damage, size, flags, ownerId, extraBounces);
 			} else if (cmd.equals("BULLET_HIT")) {
 				int targetBulletId = Integer.parseInt(tokens[1]);
-				for (Bullet b : logic.bulletPool) if (b.isActive && b.id == targetBulletId) { b.deactivate(); break; }
+				for (Bullet b : logic.bulletPool) {
+					if (b.isActive && b.id == targetBulletId) {
+						if (b.ownerId == myId) {
+							Player me = logic.players.get(myId);
+							if (me != null) {
+								if (me.hasPassiveThirst) me.thirstTimer = PLAYER_THIRST_DURATION;
+								if (me.hasPassiveConfidence) {
+									if(me.confidenceTimer == 0) me.hp *= 3;
+									me.confidenceTimer = PLAYER_CONFIDENCE_DURATION;
+								}
+							}
+						}
+						b.deactivate();
+						break;
+					}
+				}
 			} else if (cmd.equals("HEAL")) {
 				int tid = Integer.parseInt(tokens[1]); int amount = Integer.parseInt(tokens[2]);
 				if (logic.players.containsKey(tid)) { Player p = logic.players.get(tid); p.hp = Math.min(p.hp + amount, p.maxHp); }
@@ -181,11 +205,11 @@ public class ActionClient extends JFrame {
 		if (currentState != GameState.PLAYING) return;
 		logic.isRoundWinner = (deadId != myId);
 		if (logic.players.containsKey(deadId)) logic.players.get(deadId).hp = 0;
-		if (logic.isRoundWinner) { logic.myWinCount++; logic.resultMessage = "YOU WIN THE ROUND!"; }
-		else { logic.enemyWinCount++; logic.resultMessage = "YOU LOST THE ROUND..."; }
+		if (logic.isRoundWinner) { logic.myWinCount++; logic.resultMessage = "ラウンド勝利！"; }
+		else { logic.enemyWinCount++; logic.resultMessage = "ラウンド敗北..."; }
 
-		if (logic.myWinCount >= MAX_WINS) setGameOver("VICTORY! YOU WON THE MATCH!");
-		else if (logic.enemyWinCount >= MAX_WINS) setGameOver("DEFEAT... YOU LOST THE MATCH.");
+		if (logic.myWinCount >= MAX_WINS) setGameOver("完全勝利！おめでとう！");
+		else if (logic.enemyWinCount >= MAX_WINS) setGameOver("完全敗北...ドンマイ！");
 		else { logic.prepareNextRound(); currentState = (logic.isRoundWinner) ? GameState.ROUND_END_WAIT : GameState.ROUND_END_SELECT; }
 	}
 

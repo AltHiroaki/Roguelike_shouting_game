@@ -10,45 +10,39 @@ import java.util.concurrent.ConcurrentHashMap;
 import static game.GameConstants.*;
 
 public class GameLogic {
-	// ゲームデータ
 	public ConcurrentHashMap<Integer, Player> players = new ConcurrentHashMap<>();
 	public Bullet[] bulletPool = new Bullet[MAX_BULLETS];
 	public ArrayList<Line2D.Double> obstacles = new ArrayList<>();
 	public Set<Integer> joinedPlayers = Collections.synchronizedSet(new HashSet<>());
 
-	// 勝敗・スコア
 	public int myWinCount = 0;
 	public int enemyWinCount = 0;
 	public boolean isRoundWinner = false;
 	public String resultMessage = "";
 
-	// パワーアップ関連
 	public ArrayList<PowerUp> presentedPowerUps = new ArrayList<>();
-
-	// 前回のマウス状態を記録するフラグ
 	private boolean wasMousePressed = false;
+	public static int frameCount = 0;
 
 	public GameLogic() {
 		for (int i = 0; i < MAX_BULLETS; i++) bulletPool[i] = new Bullet();
 	}
 
-	// ゲームのメイン更新処理
 	public void update(int myId, InputHandler input, PrintWriter out) {
+		frameCount++;
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
 
-		// プレイヤーの移動更新
+		if (input.isRightMousePressed) me.tryGuard();
+
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
-		// 長押し連射を防止（クリックした瞬間だけ反応）
 		if (input.isMousePressed && !wasMousePressed) {
 			me.weapon.tryShoot(out, myId);
 		}
-		// 現在の状態を記録（次のフレームでの比較用）
 		wasMousePressed = input.isMousePressed;
 
-		// 弾の移動と当たり判定
 		for (Bullet b : bulletPool) {
 			if (!b.isActive) continue;
 			b.update();
@@ -58,13 +52,15 @@ public class GameLogic {
 
 	private void checkBulletCollision(Bullet b, Player me, int myId, PrintWriter out) {
 		boolean hitBoundary = false;
+
 		if (b.x < MAP_X || b.x > MAP_X + MAP_WIDTH) {
 			if (canBounce(b)) { b.angle = Math.PI - b.angle; b.bounceCount++; } else hitBoundary = true;
 		}
 		if (b.y < MAP_Y || b.y > MAP_Y + MAP_HEIGHT) {
 			if (canBounce(b)) { b.angle = -b.angle; b.bounceCount++; } else hitBoundary = true;
 		}
-		if (!hitBoundary) {
+
+		if (!hitBoundary && (b.typeFlag & FLAG_GHOST) == 0) {
 			for (Line2D.Double wall : obstacles) {
 				if (wall.ptSegDist(b.x, b.y) < b.size) {
 					if (canBounce(b)) {
@@ -75,16 +71,32 @@ public class GameLogic {
 				}
 			}
 		}
+
 		if (hitBoundary) b.deactivate();
 
 		if (b.isActive && (b.ownerId != myId || b.lifeTimer > BULLET_SAFE_TIME)) {
 			if (me.getBounds().contains(b.x, b.y)) {
-				me.hp -= b.damage;
+
+				int finalDamage = b.damage;
+				if (me.isGuarding) {
+					finalDamage = (int)(finalDamage * GUARD_DAMAGE_CUT_RATE);
+					if (finalDamage < 1) finalDamage = 1;
+				}
+
+				// ★修正: ディレイ処理
+				// 既にバッファがあっても、新しいダメージを「追加(+=)」する
+				if (me.hasPassiveDelay) {
+					me.delayDamageBuffer += finalDamage;
+					finalDamage = 0; // 即時ダメージは0にする
+				}
+
+				me.hp -= finalDamage;
 				out.println("BULLET_HIT " + b.id);
 				b.deactivate();
 
 				if ((b.typeFlag & FLAG_POISON) != 0) me.poisonTimer = PLAYER_POISON_DURATION;
-				if ((b.typeFlag & FLAG_HILL) != 0) out.println("HEAL " + b.ownerId + " " + PLAYER_HEAL_AMOUNT);
+				if ((b.typeFlag & FLAG_COLD) != 0) me.coldTimer = PLAYER_COLD_DURATION;
+				if ((b.typeFlag & FLAG_HILL) != 0) out.println("HEAL " + b.ownerId + " " + (b.damage/2));
 
 				if (me.hp <= 0) {
 					me.hp = 0;
@@ -94,34 +106,35 @@ public class GameLogic {
 		}
 	}
 
-	private boolean canBounce(Bullet b) { return (b.typeFlag & FLAG_BOUNCE) != 0 && b.bounceCount < 1; }
+	private boolean canBounce(Bullet b) {
+		return (b.typeFlag & FLAG_BOUNCE) != 0 && b.bounceCount < b.maxBounces;
+	}
 
-	public void spawnBullet(int id, double x, double y, double angle, double speed, int dmg, int size, int flags, int ownerId) {
+	public void spawnBullet(int id, double x, double y, double angle, double speed, int dmg, int size, int flags, int ownerId, int extraBounces) {
 		for (Bullet b : bulletPool) {
 			if (!b.isActive) {
 				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
+
+				// ★修正: 反射回数の設定
+				// Bullet.activateで0に初期化されているため、ここで正しい回数を上書きする
+				if(extraBounces > 0) {
+					b.typeFlag |= FLAG_BOUNCE;
+					b.maxBounces = extraBounces; // ここで回数を決定（例：反射スキルなら2）
+				} else if ((flags & FLAG_BOUNCE) != 0) {
+					// もしextraBouncesが0なのにBounceフラグがある場合（万が一の保険）
+					b.maxBounces = 2;
+				}
 				break;
 			}
 		}
 	}
 
 	public void resetPositions(int myId) {
-		// IDが一番小さい人を特定（ホスト判定用）
 		int minId = Integer.MAX_VALUE;
 		for(int id : players.keySet()) minId = Math.min(minId, id);
-
-		// 「自分(me)」だけでなく「全員(players.values())」の位置をリセットする
 		for (Player p : players.values()) {
-			if (p.id == minId) {
-				// ホスト（Player1）の位置
-				p.x = MAP_X + 50;
-				p.y = MAP_Y + 50;
-			} else {
-				// ゲスト（Player2）の位置
-				p.x = MAP_X + MAP_WIDTH - 50;
-				p.y = MAP_Y + MAP_HEIGHT - 50;
-			}
-			// HP や武器の状態も全員リセットしておく
+			if (p.id == minId) { p.x = MAP_X + 50; p.y = MAP_Y + 50; }
+			else { p.x = MAP_X + MAP_WIDTH - 50; p.y = MAP_Y + MAP_HEIGHT - 50; }
 			p.resetForRound();
 		}
 	}

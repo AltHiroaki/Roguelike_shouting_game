@@ -14,11 +14,20 @@ public class Weapon {
 	public double bulletSpeed = WEAPON_DEFAULT_SPEED;
 
 	public boolean isReloading = false;
-	public int reloadTimer = 0, burstQueue = 0, burstTimer = 0;
+	public int reloadTimer = 0;
 
-	// ★発射間隔制御用
-	public int fireInterval = 10; // 10フレーム（約0.16秒）は次が撃てない
+	public int burstQueue = 0;
+	public int burstTimer = 0;
+	public int bulletsPerBurst = 1;
+
+	public int pelletsPerShot = 1;
+	public double spreadAngle = 0.0;
+	public boolean randomSpeed = false;
+
+	public int fireInterval = 10;
 	public int fireTimer = 0;
+
+	public int extraBounces = 0;
 
 	ArrayList<WeaponEffect> effects = new ArrayList<>();
 
@@ -38,14 +47,19 @@ public class Weapon {
 		currentAmmo = maxAmmo;
 	}
 
-	private void recalcStats() {
+	public void recalcStats() {
 		maxAmmo = WEAPON_DEFAULT_AMMO;
 		reloadDuration = WEAPON_DEFAULT_RELOAD;
 		damage = WEAPON_DEFAULT_DAMAGE;
 		bulletSpeed = WEAPON_DEFAULT_SPEED;
 		bulletSize = WEAPON_DEFAULT_SIZE;
-		// エフェクトによる変更がある場合もfireIntervalを戻すならここで設定
 		fireInterval = 10;
+
+		bulletsPerBurst = 1;
+		pelletsPerShot = 1;
+		spreadAngle = 0.0;
+		randomSpeed = false;
+		extraBounces = 0;
 
 		for (WeaponEffect e : effects) e.applyStats(this);
 
@@ -53,17 +67,21 @@ public class Weapon {
 	}
 
 	public void update(PrintWriter out, int myId) {
-		// ★クールダウンタイマーの更新
 		if (fireTimer > 0) fireTimer--;
 
 		if (isReloading) {
 			reloadTimer++;
-			if (reloadTimer >= reloadDuration) { currentAmmo = maxAmmo; isReloading = false; reloadTimer = 0; }
+			if (reloadTimer >= reloadDuration) {
+				currentAmmo = maxAmmo;
+				isReloading = false;
+				reloadTimer = 0;
+			}
 		}
+
 		if (burstQueue > 0) {
 			burstTimer++;
 			if (burstTimer >= WEAPON_BURST_INTERVAL) {
-				fireRaw(owner.x, owner.y, owner.angle, out, myId);
+				performShot(out, myId);
 				burstQueue--;
 				burstTimer = 0;
 			}
@@ -71,62 +89,77 @@ public class Weapon {
 	}
 
 	public void tryShoot(PrintWriter out, int myId) {
-		// ★クールダウン中は撃てない
 		if (fireTimer > 0) return;
 
 		if (isReloading || currentAmmo <= 0) {
 			if (!isReloading && currentAmmo < maxAmmo) startReload();
+			if (currentAmmo <= 0 && owner.hasSkillEmergencyDefense) {
+				owner.tryGuard();
+			}
 			return;
 		}
 
-		// ★発射したらタイマーセット
 		fireTimer = fireInterval;
+		currentAmmo--;
 
-		boolean hasBurst = false, hasTri = false;
-		for(WeaponEffect e : effects) {
-			if(e instanceof EffectBurst) hasBurst = true;
-			if(e instanceof EffectTrifurcation) hasTri = true;
-		}
+		burstQueue = bulletsPerBurst;
+		performShot(out, myId);
+		burstQueue--;
 
-		if (hasBurst) {
-			currentAmmo--; burstQueue = WEAPON_BURST_COUNT; burstTimer = WEAPON_BURST_INTERVAL;
-		} else {
-			currentAmmo--;
-			if (hasTri) {
-				fireRaw(owner.x, owner.y, owner.angle, out, myId);
-				fireRaw(owner.x, owner.y, owner.angle - WEAPON_TRI_ANGLE_OFFSET, out, myId);
-				fireRaw(owner.x, owner.y, owner.angle + WEAPON_TRI_ANGLE_OFFSET, out, myId);
-			} else {
-				fireRaw(owner.x, owner.y, owner.angle, out, myId);
-			}
-		}
 		if (currentAmmo <= 0) startReload();
 	}
 
-	private void startReload() { isReloading = true; reloadTimer = 0; }
+	private void performShot(PrintWriter out, int myId) {
+		for (int i = 0; i < pelletsPerShot; i++) {
+			double currentAngle = owner.angle;
+			double speed = bulletSpeed;
 
-	private void fireRaw(double x, double y, double angle, PrintWriter out, int myId) {
+			if (pelletsPerShot > 1) {
+				if (randomSpeed) {
+					currentAngle += (Math.random() - 0.5) * 1.0;
+					speed = bulletSpeed * (0.98 + Math.random() * 0.04);
+				} else {
+					double step = 0.2;
+					double offset = (i - (pelletsPerShot - 1) / 2.0) * step;
+					currentAngle += offset;
+				}
+			}
+
+			fireRaw(owner.x, owner.y, currentAngle, speed, out, myId);
+		}
+	}
+
+	public void startReload() { isReloading = true; reloadTimer = 0; }
+
+	private void fireRaw(double x, double y, double angle, double spd, PrintWriter out, int myId) {
 		int bId = (int)(Math.random() * 1000000);
 		int flags = FLAG_NONE;
 		for(WeaponEffect e : effects) flags |= e.getFlag();
 
 		out.println("SHOT " + bId + " " + x + " " + y + " " + angle +
-				" " + bulletSpeed + " " + damage + " " + bulletSize + " " + flags + " " + myId);
+				" " + spd + " " + damage + " " + bulletSize + " " + flags + " " + myId + " " + extraBounces);
 	}
 }
-
-// === 以下、消えてしまっていたエフェクトクラス群（定数使用版） ===
 
 abstract class WeaponEffect {
 	public abstract void applyStats(Weapon w);
 	public int getFlag() { return FLAG_NONE; }
 }
-class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= EFFECT_HILL_DAMAGE_MULT; } public int getFlag() { return FLAG_HILL; } }
-class EffectBounce extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= EFFECT_BOUNCE_SPEED_MULT; w.reloadDuration *= EFFECT_BOUNCE_RELOAD_MULT; } public int getFlag() { return FLAG_BOUNCE; } }
-class EffectTrifurcation extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= EFFECT_TRI_RELOAD_MULT; } }
-class EffectRising extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= EFFECT_RISING_SPEED_MULT; w.damage *= EFFECT_RISING_DAMAGE_MULT; } }
-class EffectImpact extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= EFFECT_IMPACT_DAMAGE_MULT; w.reloadDuration *= EFFECT_IMPACT_RELOAD_MULT; w.maxAmmo -= EFFECT_IMPACT_AMMO_REDUCTION; } }
-class EffectBigBall extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSize *= EFFECT_BIG_SIZE_MULT; w.damage *= EFFECT_BIG_DAMAGE_MULT; w.bulletSpeed *= EFFECT_BIG_SPEED_MULT; } }
-class EffectPoison extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= EFFECT_POISON_RELOAD_MULT; } public int getFlag() { return FLAG_POISON; } }
-class EffectBurst extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= EFFECT_BURST_RELOAD_MULT; } }
-class EffectExtendedMag extends WeaponEffect { public void applyStats(Weapon w) { w.maxAmmo += EFFECT_EXTMAG_AMOUNT; } }
+
+class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 0.5; } public int getFlag() { return FLAG_HILL; } }
+class EffectRising extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= 2.0; w.damage *= 0.8; } }
+class EffectImpactShot extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 2.0; w.bulletSpeed *= 2.0; w.reloadDuration *= 1.5; w.fireInterval += 60; } }
+class EffectBigBoy extends WeaponEffect { public void applyStats(Weapon w) { } }
+class EffectSmallBoy extends WeaponEffect { public void applyStats(Weapon w) { } }
+class EffectDanmaku extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot = 5; w.reloadDuration *= 1.2; } }
+class EffectReelGun extends WeaponEffect { public void applyStats(Weapon w) { w.bulletsPerBurst = 3; w.reloadDuration *= 1.2; } }
+class EffectShower extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot = 15; w.randomSpeed = true; w.reloadDuration *= 1.5; w.damage *= 0.6; } }
+class EffectReflection extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 2; w.damage *= 1.1; w.reloadDuration *= 1.1; } public int getFlag() { return FLAG_BOUNCE; } }
+class EffectOutOfControl extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 5; w.bulletSpeed *= 1.2; w.reloadDuration *= 1.2; } public int getFlag() { return FLAG_BOUNCE; } }
+class EffectIdaten extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= 2.0; w.damage *= 0.6; } }
+class EffectColdShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.5; } public int getFlag() { return FLAG_COLD; } }
+class Effect3in1 extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 2.0; w.bulletSpeed *= 2.0; w.maxAmmo -= 2; w.reloadDuration *= 1.5; } }
+class EffectPoisonNew extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.25; } public int getFlag() { return FLAG_POISON; } }
+class EffectGhostShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.25; } public int getFlag() { return FLAG_GHOST; } }
+class EffectQuickReload extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration /= 2; } }
+class EffectExtendedMag extends WeaponEffect { public void applyStats(Weapon w) { w.maxAmmo += 5; } }
