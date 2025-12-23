@@ -14,7 +14,7 @@ public class GameConstants {
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
 
-	// UIレイアウト
+	// UI レイアウト
 	public static final int UI_AMMO_Y_OFFSET = 30;
 	public static final int UI_BAR_WIDTH = 40;
 	public static final int UI_BAR_HEIGHT = 5;
