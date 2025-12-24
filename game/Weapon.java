@@ -88,7 +88,6 @@ public class Weapon {
 		}
 	}
 
-	// tryShoot メソッドを以下の内容に書き換えてください
 
 	public void tryShoot(PrintWriter out, int myId) {
 		// クールダウン中は撃てない
@@ -156,16 +155,16 @@ abstract class WeaponEffect {
 	public int getFlag() { return FLAG_NONE; }
 }
 
-class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 0.5; } public int getFlag() { return FLAG_HILL; } }
+class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 0.6; } public int getFlag() { return FLAG_HILL; } }
 class EffectRising extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= 2.0; w.damage *= 0.8; } }
 class EffectImpactShot extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 2.0; w.bulletSpeed *= 2.0; w.reloadDuration *= 1.5; w.fireInterval += 60; } }
 class EffectBigBoy extends WeaponEffect { public void applyStats(Weapon w) { } }
 class EffectSmallBoy extends WeaponEffect { public void applyStats(Weapon w) { } }
-class EffectDanmaku extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot = 5; w.reloadDuration *= 1.2; } }
-class EffectReelGun extends WeaponEffect { public void applyStats(Weapon w) { w.bulletsPerBurst = 3; w.reloadDuration *= 1.2; } }
-class EffectShower extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot = 15; w.randomSpeed = true; w.reloadDuration *= 1.5; w.damage *= 0.6; } }
-class EffectReflection extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 2; w.damage *= 1.1; w.reloadDuration *= 1.1; } public int getFlag() { return FLAG_BOUNCE; } }
-class EffectOutOfControl extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 5; w.bulletSpeed *= 1.2; w.reloadDuration *= 1.2; } public int getFlag() { return FLAG_BOUNCE; } }
+class EffectDanmaku extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot = 5; w.reloadDuration *= 1.3; } }
+class EffectReelGun extends WeaponEffect { public void applyStats(Weapon w) { w.bulletsPerBurst = 3; w.reloadDuration *= 1.3; } }
+class EffectShower extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot = 15; w.randomSpeed = true; w.reloadDuration *= 1.5; w.damage *= 0.3; } }
+class EffectReflection extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 2; w.damage *= 1.1; w.reloadDuration *= 1.2; } public int getFlag() { return FLAG_BOUNCE; } }
+class EffectOutOfControl extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 5; w.bulletSpeed *= 1.2; w.reloadDuration *= 1.3; } public int getFlag() { return FLAG_BOUNCE; } }
 class EffectIdaten extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= 2.0; w.damage *= 0.6; } }
 class EffectColdShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.5; } public int getFlag() { return FLAG_COLD; } }
 class Effect3in1 extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 2.0; w.bulletSpeed *= 2.0; w.maxAmmo -= 2; w.reloadDuration *= 1.5; } }

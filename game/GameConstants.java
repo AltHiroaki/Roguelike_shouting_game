@@ -16,7 +16,6 @@ public class GameConstants {
 
 	// UI レイアウト
 	public static final int UI_AMMO_Y_OFFSET = 30;
-	public static final int UI_BAR_WIDTH = 40;
 	public static final int UI_BAR_HEIGHT = 5;
 	public static final int UI_BAR_HP_Y_OFFSET = -35;
 	public static final int UI_BAR_RELOAD_Y_OFFSET = -45;
@@ -43,7 +42,6 @@ public class GameConstants {
 	public static final int PLAYER_COLD_DURATION = 180;
 	public static final int PLAYER_THIRST_DURATION = 180;
 	public static final int PLAYER_CONFIDENCE_DURATION = 180;
-	public static final int PLAYER_HEAL_AMOUNT = 5;
 
 	// === ガード設定 ===
 	public static final int GUARD_DURATION = 60;

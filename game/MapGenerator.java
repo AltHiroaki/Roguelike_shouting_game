@@ -4,6 +4,9 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import static game.GameConstants.*;
 
+/**
+ * マップ生成を行うクラス
+ */
 public class MapGenerator {
 
 	public static final int MAP_TYPE_C = 0;
@@ -26,12 +29,12 @@ public class MapGenerator {
 		} else if (type == MAP_TYPE_B) {
 			for (int i = 1; i <= 3; i++) {
 				int y = MAP_Y + (MAP_HEIGHT / 4) * i;
-				int gap = 100;
-				obstacles.add(new Line2D.Double(MAP_X + 50, y, MAP_X + MAP_WIDTH/2 - gap/2, y));
-				obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2 + gap/2, y, MAP_X + MAP_WIDTH - 50, y));
+				double gap = 100;
+				obstacles.add(new Line2D.Double(MAP_X + 50, y, MAP_X + (double) MAP_WIDTH /2 - gap /2, y));
+				obstacles.add(new Line2D.Double(MAP_X + (double) MAP_WIDTH /2 + gap/2, y, MAP_X + MAP_WIDTH - 50, y));
 			}
-			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + 50, MAP_X + MAP_WIDTH/2, MAP_Y + 150));
-			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 150, MAP_X + MAP_WIDTH/2, MAP_Y + MAP_HEIGHT - 50));
+			obstacles.add(new Line2D.Double(MAP_X + (double) MAP_WIDTH /2, MAP_Y + 50, MAP_X + (double) MAP_WIDTH /2, MAP_Y + 150));
+			obstacles.add(new Line2D.Double(MAP_X + (double) MAP_WIDTH /2, MAP_Y + MAP_HEIGHT - 150, MAP_X + (double) MAP_WIDTH /2, MAP_Y + MAP_HEIGHT - 50));
 		} else {
 			// MAP_TYPE_C
 			int cx = MAP_X + MAP_WIDTH / 2;

@@ -25,9 +25,6 @@ public class Bullet {
 		this.isActive = true;
 		this.bounceCount = 0;
 		this.lifeTimer = 0;
-
-		// ★修正: ここで勝手に回数を決めず、0で初期化する。
-		// 回数は GameLogic の spawnBullet で extraBounces から設定される。
 		this.maxBounces = 0;
 	}
 
