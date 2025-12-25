@@ -30,7 +30,7 @@ public class Player {
 	public boolean hasSkillInvisible = false;
 	public boolean hasSkillEmergencyDefense = false;
 	public boolean hasSkillTeleport = false;
-	// hasSkillColdPresence を削除
+
 	public boolean hasPassiveThirst = false;
 	public boolean hasPassiveDelay = false;
 	public boolean hasPassiveConfidence = false;
@@ -104,18 +104,12 @@ public class Player {
 		}
 	}
 
-	/**
-	 * 緊急防御用：クールダウンを無視してガードを発動する
-	 */
 	public void forceGuard() {
-		// すでにガード中なら何もしない
 		if (isGuarding) return;
 
-		// ガード発動
 		isGuarding = true;
 		guardTimer = GUARD_DURATION;
 
-		// 通常のガードと同じ追加効果の処理
 		int cooldownAdd = 0;
 		if (hasSkillTacticalReload) {
 			weapon.currentAmmo = weapon.maxAmmo;
@@ -130,21 +124,10 @@ public class Player {
 			cooldownAdd += 300;
 		}
 		if (hasSkillTeleport) {
-			// テレポート処理（privateメソッドなので、中身をコピーするか、teleport()をprotected/publicにするか、
-			// tryGuard内のロジックを共通化するのが綺麗ですが、今回はコピーで対応します）
-			double dist = 150.0;
-			double tx = x + Math.cos(angle) * dist;
-			double ty = y + Math.sin(angle) * dist;
-			if (tx < MAP_X) tx = MAP_X + 10;
-			if (tx > MAP_X + MAP_WIDTH) tx = MAP_X + MAP_WIDTH - 10;
-			if (ty < MAP_Y) ty = MAP_Y + 10;
-			if (ty > MAP_Y + MAP_HEIGHT) ty = MAP_Y + MAP_HEIGHT - 10;
-			x = tx; y = ty;
-
+			teleport();
 			cooldownAdd += 120;
 		}
 
-		// 発動後はクールタイムが発生する
 		guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
 	}
 
@@ -176,9 +159,15 @@ public class Player {
 
 		if (invisibleTimer > 0) invisibleTimer--;
 
+		// 修正: ディレイダメージの処理
+		// 固定値(-1)ではなく、バッファ残量に応じたダメージ(-10% + 1)を与えることで、
+		// ダメージが蓄積するほど減るペースが速くなります（要望の動作を実現）
 		if (hasPassiveDelay && delayDamageBuffer > 0) {
-			if(delayDamageBuffer > 0 && hp > 0) {
-				if(GameLogic.frameCount % 10 == 0) { hp--; delayDamageBuffer--; }
+			if(hp > 0 && GameLogic.frameCount % 20 == 0) { // 頻度調整 (例: 0.3秒ごと)
+				int bleed = (int)(delayDamageBuffer * 0.1) + 1;
+				hp -= bleed;
+				delayDamageBuffer -= bleed;
+				if(delayDamageBuffer < 0) delayDamageBuffer = 0;
 			}
 		}
 
@@ -234,37 +223,44 @@ public class Player {
 		AffineTransform old = g2d.getTransform();
 		g2d.translate(x, y);
 
+		// HPバー
 		g2d.setColor(Color.RED); g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, 40, UI_BAR_HEIGHT);
 		g2d.setColor(Color.GREEN);
 		int barWidth = (int)(40 * (hp / (double)maxHp));
 		if (barWidth > 40) barWidth = 40; if (barWidth < 0) barWidth = 0;
 		g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, barWidth, UI_BAR_HEIGHT);
 
-		if (poisonTimer > 0) { g2d.setColor(Color.MAGENTA); g2d.drawString("POISON", -20, UI_TEXT_POISON_Y_OFFSET); }
-		if (coldTimer > 0) { g2d.setColor(Color.CYAN); g2d.drawString("COLD", -20, UI_TEXT_POISON_Y_OFFSET - 10); }
+		// 修正: 状態異常を文字ではなく「靄」で表現 (本体の描画後に被せるため、ここでは描画せず後述するか、下地として描く)
+		// ここでは一旦保留し、本体描画の前後に処理します
 
+		// リロードバー
 		if (weapon.isReloading) {
 			g2d.setColor(Color.GRAY); g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(Color.YELLOW);
 			double progress = (double)weapon.reloadTimer / weapon.reloadDuration;
+			// 修正: 相手側のリロード時間がずれている場合にバーが突き抜けるのを防ぐ (最大1.0でクリップ)
+			if (progress > 1.0) progress = 1.0;
 			g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, (int)(40 * progress), UI_BAR_HEIGHT);
 		}
 
-		if (id == myId && guardCooldownTimer > 0) {
+		// 修正: ガードクールダウンバーを「自分以外」にも表示するよう id check を削除
+		if (guardCooldownTimer > 0) {
 			g2d.setColor(Color.GRAY);
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(COLOR_GUARD_COOLDOWN);
 			double progress = 1.0 - ((double)guardCooldownTimer / GUARD_COOLDOWN);
+			if (progress < 0) progress = 0; // 安全策
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, (int)(40 * progress), UI_BAR_HEIGHT);
 		}
 
 		if (isGuarding) {
 			g2d.setColor(COLOR_GUARD_SHIELD);
 			g2d.fillOval(-size - 5, -size - 5, (size * 2) + 10, (size * 2) + 10);
-			// ColdPresenceのエフェクト描画を削除
 		}
 
 		g2d.rotate(angle);
+
+		// 本体描画
 		BufferedImage img = (id == myId) ? imgMe : imgEnemy;
 		if (img != null) {
 			if(invisibleTimer > 0) {
@@ -281,6 +277,16 @@ public class Player {
 			g2d.setColor(Color.BLACK);
 			g2d.drawLine(0, 0, size + 10, 0);
 		}
+
+		if (poisonTimer > 0) {
+			g2d.setColor(new Color(128, 0, 128, 100)); // 半透明の紫
+			g2d.fillOval(-size, -size, size * 2, size * 2);
+		}
+		if (coldTimer > 0) {
+			g2d.setColor(new Color(0, 255, 255, 100)); // 半透明のシアン
+			g2d.fillOval(-size, -size, size * 2, size * 2);
+		}
+
 		g2d.setTransform(old);
 	}
 
