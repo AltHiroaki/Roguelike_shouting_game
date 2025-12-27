@@ -33,13 +33,15 @@ public class GameLogic {
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
 
-		if (input.isRightMousePressed) me.tryGuard();
+		// 修正: obstaclesを渡す
+		if (input.isRightMousePressed) me.tryGuard(obstacles);
 
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
 		if (input.isMousePressed && !wasMousePressed) {
-			me.weapon.tryShoot(out, myId);
+			// 修正: obstaclesを渡す
+			me.weapon.tryShoot(out, myId, obstacles);
 		}
 		wasMousePressed = input.isMousePressed;
 
@@ -83,11 +85,9 @@ public class GameLogic {
 					if (finalDamage < 1) finalDamage = 1;
 				}
 
-				// ★修正: ディレイ処理
-				// 既にバッファがあっても、新しいダメージを「追加(+=)」する
 				if (me.hasPassiveDelay) {
 					me.delayDamageBuffer += finalDamage;
-					finalDamage = 0; // 即時ダメージは0にする
+					finalDamage = 0;
 				}
 
 				me.hp -= finalDamage;
@@ -115,13 +115,10 @@ public class GameLogic {
 			if (!b.isActive) {
 				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
 
-				// ★修正: 反射回数の設定
-				// Bullet.activateで0に初期化されているため、ここで正しい回数を上書きする
 				if(extraBounces > 0) {
 					b.typeFlag |= FLAG_BOUNCE;
-					b.maxBounces = extraBounces; // ここで回数を決定（例：反射スキルなら2）
+					b.maxBounces = extraBounces;
 				} else if ((flags & FLAG_BOUNCE) != 0) {
-					// もしextraBouncesが0なのにBounceフラグがある場合（万が一の保険）
 					b.maxBounces = 2;
 				}
 				break;

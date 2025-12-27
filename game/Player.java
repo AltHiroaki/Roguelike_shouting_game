@@ -69,15 +69,16 @@ public class Player {
 		size = PLAYER_SIZE;
 		speed = PLAYER_SPEED;
 		for(WeaponEffect e : weapon.effects) {
-			if(e instanceof EffectBigBoy) { maxHp += 50; size *= 2; }
-			if(e instanceof EffectSmallBoy) { maxHp = 50; size /= 2; speed *= 1.3; }
-			if(e instanceof EffectIdaten) { maxHp = (int)(maxHp * 0.8); speed *= 2.0; }
+			if(e instanceof EffectBigBoy) { maxHp += POWERUP_TANK_HP_BONUS; size *= POWERUP_TANK_SIZE_MULT; }
+			if(e instanceof EffectSmallBoy) { maxHp = POWERUP_ROGUE_FIXED_HP; size *= POWERUP_ROGUE_SIZE_MULT; speed *= POWERUP_ROGUE_SPEED_MULT; }
+			if(e instanceof EffectIdaten) { maxHp = (int)(maxHp * POWERUP_IDATEN_HP_MULT); speed *= POWERUP_IDATEN_SPEED_MULT; }
 		}
-		if(hasSkillExclusiveDefense) maxHp = (int)(maxHp * 1.3);
+		if(hasSkillExclusiveDefense) maxHp = (int)(maxHp * SKILL_EXC_DEFENSE_HP_MULT);
 		if(hp > maxHp) hp = maxHp;
 	}
 
-	public void tryGuard() {
+	// 修正: obstaclesを受け取るように変更
+	public void tryGuard(ArrayList<Line2D.Double> obstacles) {
 		if (guardCooldownTimer <= 0 && !isGuarding) {
 			isGuarding = true;
 			guardTimer = GUARD_DURATION;
@@ -96,7 +97,7 @@ public class Player {
 				cooldownAdd += 300;
 			}
 			if (hasSkillTeleport) {
-				teleport();
+				teleport(obstacles); // 修正: obstaclesを渡す
 				cooldownAdd += 120;
 			}
 
@@ -104,7 +105,8 @@ public class Player {
 		}
 	}
 
-	public void forceGuard() {
+	// 修正: obstaclesを受け取るように変更
+	public void forceGuard(ArrayList<Line2D.Double> obstacles) {
 		if (isGuarding) return;
 
 		isGuarding = true;
@@ -124,22 +126,34 @@ public class Player {
 			cooldownAdd += 300;
 		}
 		if (hasSkillTeleport) {
-			teleport();
+			teleport(obstacles); // 修正: obstaclesを渡す
 			cooldownAdd += 120;
 		}
 
 		guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
 	}
 
-	private void teleport() {
-		double dist = 150.0;
+	// 修正: 安全なテレポートの実装
+	private void teleport(ArrayList<Line2D.Double> obstacles) {
+		double dist = SKILL_TELEPORT_DISTANCE;
 		double tx = x + Math.cos(angle) * dist;
 		double ty = y + Math.sin(angle) * dist;
-		if (tx < MAP_X) tx = MAP_X + 10;
-		if (tx > MAP_X + MAP_WIDTH) tx = MAP_X + MAP_WIDTH - 10;
-		if (ty < MAP_Y) ty = MAP_Y + 10;
-		if (ty > MAP_Y + MAP_HEIGHT) ty = MAP_Y + MAP_HEIGHT - 10;
-		x = tx; y = ty;
+
+		// 1. マップ範囲内にクランプ (壁の内側に入るようにsizeを考慮)
+		if (tx < MAP_X + size) tx = MAP_X + size;
+		if (tx > MAP_X + MAP_WIDTH - size) tx = MAP_X + MAP_WIDTH - size;
+		if (ty < MAP_Y + size) ty = MAP_Y + size;
+		if (ty > MAP_Y + MAP_HEIGHT - size) ty = MAP_Y + MAP_HEIGHT - size;
+
+		// 2. 移動先が壁の中かどうかチェック
+		// 移動先が壁なら、テレポートをキャンセル（または元の位置に戻る）
+		if (!checkWall(tx, ty, obstacles)) {
+			x = tx;
+			y = ty;
+		} else {
+			// 壁の中になる場合はテレポート失敗（何もしない、または視覚効果だけ出す等の処理）
+			// ここでは「移動しない」としてスタックを防ぎます。
+		}
 	}
 
 	public void update(boolean keyW, boolean keyS, boolean keyA, boolean keyD, int mx, int my, ArrayList<Line2D.Double> obstacles, PrintWriter out) {
@@ -159,11 +173,8 @@ public class Player {
 
 		if (invisibleTimer > 0) invisibleTimer--;
 
-		// 修正: ディレイダメージの処理
-		// 固定値(-1)ではなく、バッファ残量に応じたダメージ(-10% + 1)を与えることで、
-		// ダメージが蓄積するほど減るペースが速くなります（要望の動作を実現）
 		if (hasPassiveDelay && delayDamageBuffer > 0) {
-			if(hp > 0 && GameLogic.frameCount % 20 == 0) { // 頻度調整 (例: 0.3秒ごと)
+			if(hp > 0 && GameLogic.frameCount % 20 == 0) {
 				int bleed = (int)(delayDamageBuffer * 0.1) + 1;
 				hp -= bleed;
 				delayDamageBuffer -= bleed;
@@ -203,13 +214,21 @@ public class Player {
 				+ " " + weapon.isReloading + " " + weapon.reloadTimer
 				+ " " + isGuarding + " " + guardCooldownTimer + " " + (invisibleTimer > 0) + " " + id);
 
-		weapon.update(out, id);
+		// 修正: updateからもobstaclesを渡す
+		weapon.update(out, id, obstacles);
 	}
 
+	// 修正: バッファ(MAP_COLLISION_BUFFER)を追加して、壁ギリギリで止まるようにする
 	private boolean checkWall(double tx, double ty, ArrayList<Line2D.Double> walls) {
-		if (tx < MAP_X + size || tx > MAP_X + MAP_WIDTH - size) return true;
-		if (ty < MAP_Y + size || ty > MAP_Y + MAP_HEIGHT - size) return true;
-		for (Line2D.Double w : walls) if (w.ptSegDist(tx, ty) < size) return true;
+		// 判定サイズを少し大きくする
+		double checkSize = size + MAP_COLLISION_BUFFER;
+
+		if (tx < MAP_X + checkSize || tx > MAP_X + MAP_WIDTH - checkSize) return true;
+		if (ty < MAP_Y + checkSize || ty > MAP_Y + MAP_HEIGHT - checkSize) return true;
+
+		for (Line2D.Double w : walls) {
+			if (w.ptSegDist(tx, ty) < checkSize) return true;
+		}
 		return false;
 	}
 
@@ -223,33 +242,26 @@ public class Player {
 		AffineTransform old = g2d.getTransform();
 		g2d.translate(x, y);
 
-		// HPバー
 		g2d.setColor(Color.RED); g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, 40, UI_BAR_HEIGHT);
 		g2d.setColor(Color.GREEN);
 		int barWidth = (int)(40 * (hp / (double)maxHp));
 		if (barWidth > 40) barWidth = 40; if (barWidth < 0) barWidth = 0;
 		g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, barWidth, UI_BAR_HEIGHT);
 
-		// 修正: 状態異常を文字ではなく「靄」で表現 (本体の描画後に被せるため、ここでは描画せず後述するか、下地として描く)
-		// ここでは一旦保留し、本体描画の前後に処理します
-
-		// リロードバー
 		if (weapon.isReloading) {
 			g2d.setColor(Color.GRAY); g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(Color.YELLOW);
 			double progress = (double)weapon.reloadTimer / weapon.reloadDuration;
-			// 修正: 相手側のリロード時間がずれている場合にバーが突き抜けるのを防ぐ (最大1.0でクリップ)
 			if (progress > 1.0) progress = 1.0;
 			g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, (int)(40 * progress), UI_BAR_HEIGHT);
 		}
 
-		// 修正: ガードクールダウンバーを「自分以外」にも表示するよう id check を削除
 		if (guardCooldownTimer > 0) {
 			g2d.setColor(Color.GRAY);
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(COLOR_GUARD_COOLDOWN);
 			double progress = 1.0 - ((double)guardCooldownTimer / GUARD_COOLDOWN);
-			if (progress < 0) progress = 0; // 安全策
+			if (progress < 0) progress = 0;
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, (int)(40 * progress), UI_BAR_HEIGHT);
 		}
 
@@ -260,7 +272,6 @@ public class Player {
 
 		g2d.rotate(angle);
 
-		// 本体描画
 		BufferedImage img = (id == myId) ? imgMe : imgEnemy;
 		if (img != null) {
 			if(invisibleTimer > 0) {
@@ -279,11 +290,11 @@ public class Player {
 		}
 
 		if (poisonTimer > 0) {
-			g2d.setColor(new Color(128, 0, 128, 100)); // 半透明の紫
+			g2d.setColor(new Color(128, 0, 128, 100));
 			g2d.fillOval(-size, -size, size * 2, size * 2);
 		}
 		if (coldTimer > 0) {
-			g2d.setColor(new Color(0, 255, 255, 100)); // 半透明のシアン
+			g2d.setColor(new Color(0, 255, 255, 100));
 			g2d.fillOval(-size, -size, size * 2, size * 2);
 		}
 

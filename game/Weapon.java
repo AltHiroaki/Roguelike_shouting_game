@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.awt.geom.Line2D; // 追加
 import java.io.PrintWriter;
 import static game.GameConstants.*;
 
@@ -66,7 +67,8 @@ public class Weapon {
 		if (maxAmmo < 1) maxAmmo = 1;
 	}
 
-	public void update(PrintWriter out, int myId) {
+	// 修正: obstaclesを受け取るように変更 (バースト射撃用)
+	public void update(PrintWriter out, int myId, ArrayList<Line2D.Double> obstacles) {
 		if (fireTimer > 0) fireTimer--;
 
 		if (isReloading) {
@@ -88,12 +90,12 @@ public class Weapon {
 		}
 	}
 
-
-	public void tryShoot(PrintWriter out, int myId) {
+	//修正: obstaclesを受け取るように変更
+	public void tryShoot(PrintWriter out, int myId, ArrayList<Line2D.Double> obstacles) {
 		if (fireTimer > 0) return;
 
 		if (isReloading || currentAmmo <= 0) {
-			if (!isReloading && currentAmmo < maxAmmo) startReload();
+			if (!isReloading && currentAmmo < maxAmmo) startReload(obstacles);
 			return;
 		}
 
@@ -105,9 +107,9 @@ public class Weapon {
 		burstQueue--;
 
 		if (currentAmmo <= 0) {
-			startReload();
+			startReload(obstacles);
 			if (owner.hasSkillEmergencyDefense) {
-				owner.forceGuard();
+				owner.forceGuard(obstacles); // 修正: obstaclesを渡す
 			}
 		}
 	}
@@ -132,7 +134,11 @@ public class Weapon {
 		}
 	}
 
-	public void startReload() { isReloading = true; reloadTimer = 0; }
+	// 修正: obstacles引数追加
+	public void startReload(ArrayList<Line2D.Double> obstacles) {
+		isReloading = true;
+		reloadTimer = 0;
+	}
 
 	private void fireRaw(double x, double y, double angle, double spd, PrintWriter out, int myId) {
 		int bId = (int)(Math.random() * 1000000);
@@ -149,28 +155,37 @@ abstract class WeaponEffect {
 	public int getFlag() { return FLAG_NONE; }
 }
 
-// 修正点: 固定値代入 (=) ではなく、加算 (+=) や乗算 (*=) を徹底して重複可能にしました。
-class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 0.6; } public int getFlag() { return FLAG_HILL; } }
-class EffectRising extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= 2.0; w.damage *= 0.8; } }
-class EffectImpactShot extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 2.0; w.bulletSpeed *= 2.0; w.reloadDuration *= 1.5; w.fireInterval += 60; } }
+// === ★修正: 定数化対応 ===
+
+class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= POWERUP_HILL_DAMAGE_MULT; } public int getFlag() { return FLAG_HILL; } }
+
+class EffectRising extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= POWERUP_RISING_SPEED_MULT; w.damage *= POWERUP_RISING_DAMAGE_MULT; } }
+
+class EffectImpactShot extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= POWERUP_IMPACT_DAMAGE_MULT; w.bulletSpeed *= POWERUP_IMPACT_SPEED_MULT; w.reloadDuration *= POWERUP_IMPACT_RELOAD_MULT; w.fireInterval += POWERUP_IMPACT_INTERVAL_ADD; } }
+
 class EffectBigBoy extends WeaponEffect { public void applyStats(Weapon w) { } }
 class EffectSmallBoy extends WeaponEffect { public void applyStats(Weapon w) { } }
 
-// 修正: 弾数を「加算」に変更 (Base 1 + 4 = 5)
-class EffectDanmaku extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot += 4; w.reloadDuration *= 1.3; } }
+class EffectDanmaku extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot += POWERUP_DANMAKU_PELLETS_ADD; w.reloadDuration *= POWERUP_DANMAKU_RELOAD_MULT; } }
 
-// 修正: バースト数を「加算」に変更 (Base 1 + 2 = 3)
-class EffectReelGun extends WeaponEffect { public void applyStats(Weapon w) { w.bulletsPerBurst += 2; w.reloadDuration *= 1.3; } }
+class EffectReelGun extends WeaponEffect { public void applyStats(Weapon w) { w.bulletsPerBurst += POWERUP_REEL_BURST_ADD; w.reloadDuration *= POWERUP_REEL_RELOAD_MULT; } }
 
-// 修正: 弾数を「加算」に変更 (Base 1 + 14 = 15)
-class EffectShower extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot += 14; w.randomSpeed = true; w.reloadDuration *= 1.5; w.damage *= 0.3; } }
+class EffectShower extends WeaponEffect { public void applyStats(Weapon w) { w.pelletsPerShot += POWERUP_SHOWER_PELLETS_ADD; w.randomSpeed = true; w.reloadDuration *= POWERUP_SHOWER_RELOAD_MULT; w.damage *= POWERUP_SHOWER_DAMAGE_MULT; } }
 
-class EffectReflection extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 2; w.damage *= 1.1; w.reloadDuration *= 1.2; } public int getFlag() { return FLAG_BOUNCE; } }
-class EffectOutOfControl extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += 5; w.bulletSpeed *= 1.2; w.reloadDuration *= 1.3; } public int getFlag() { return FLAG_BOUNCE; } }
-class EffectIdaten extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= 2.0; w.damage *= 0.6; } }
-class EffectColdShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.5; } public int getFlag() { return FLAG_COLD; } }
-class Effect3in1 extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= 2.0; w.bulletSpeed *= 2.0; w.maxAmmo = Math.max(1, w.maxAmmo - 2); w.reloadDuration *= 1.5; } }
-class EffectPoisonNew extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.25; } public int getFlag() { return FLAG_POISON; } }
-class EffectGhostShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= 1.25; } public int getFlag() { return FLAG_GHOST; } }
-class EffectQuickReload extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration /= 2; } }
-class EffectExtendedMag extends WeaponEffect { public void applyStats(Weapon w) { w.maxAmmo += 5; } }
+class EffectReflection extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += POWERUP_REFLECT_BOUNCE_ADD; w.damage *= POWERUP_REFLECT_DAMAGE_MULT; w.reloadDuration *= POWERUP_REFLECT_RELOAD_MULT; } public int getFlag() { return FLAG_BOUNCE; } }
+
+class EffectOutOfControl extends WeaponEffect { public void applyStats(Weapon w) { w.extraBounces += POWERUP_CONTROL_BOUNCE_ADD; w.bulletSpeed *= POWERUP_CONTROL_SPEED_MULT; w.reloadDuration *= POWERUP_CONTROL_RELOAD_MULT; } public int getFlag() { return FLAG_BOUNCE; } }
+
+class EffectIdaten extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= POWERUP_IDATEN_SPEED_MULT; w.damage *= POWERUP_IDATEN_DAMAGE_MULT; } }
+
+class EffectColdShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= POWERUP_COLD_RELOAD_MULT; } public int getFlag() { return FLAG_COLD; } }
+
+class Effect3in1 extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= POWERUP_3IN1_DAMAGE_MULT; w.bulletSpeed *= POWERUP_3IN1_SPEED_MULT; w.maxAmmo = Math.max(1, w.maxAmmo - POWERUP_3IN1_AMMO_SUB); w.reloadDuration *= POWERUP_3IN1_RELOAD_MULT; } }
+
+class EffectPoisonNew extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= POWERUP_POISON_RELOAD_MULT; } public int getFlag() { return FLAG_POISON; } }
+
+class EffectGhostShot extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= POWERUP_GHOST_RELOAD_MULT; } public int getFlag() { return FLAG_GHOST; } }
+
+class EffectQuickReload extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= POWERUP_QUICK_RELOAD_MULT; } }
+
+class EffectExtendedMag extends WeaponEffect { public void applyStats(Weapon w) { w.maxAmmo += EFFECT_EXTMAG_AMOUNT; } }

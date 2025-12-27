@@ -13,6 +13,7 @@ public class GameConstants {
 	public static final int MAP_Y = 80;
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
+	public static final double MAP_COLLISION_BUFFER = 2.0; // 衝突判定のバッファ (壁にめり込まないようにする余白)
 
 	// UI レイアウト
 	public static final int UI_AMMO_Y_OFFSET = 30;
@@ -47,6 +48,9 @@ public class GameConstants {
 	public static final int GUARD_DURATION = 60;
 	public static final int GUARD_COOLDOWN = 300;
 	public static final double GUARD_DAMAGE_CUT_RATE = 0.1;
+
+	// テレポート距離
+	public static final double SKILL_TELEPORT_DISTANCE = 150.0;
 
 	// === 武器・弾丸 基本設定 ===
 	public static final int WEAPON_DEFAULT_AMMO = 5;
@@ -88,10 +92,77 @@ public class GameConstants {
 	public static final Color COLOR_GUARD_SHIELD = new Color(0, 255, 255, 100);
 	public static final Color COLOR_GUARD_COOLDOWN = new Color(100, 100, 255);
 
+	// === パワーアップ・スキル用定数 ===
+
+	// EffectHill
+	public static final double POWERUP_HILL_DAMAGE_MULT = 0.6;
+
+	// EffectRising
+	public static final double POWERUP_RISING_SPEED_MULT = 2.0;
+	public static final double POWERUP_RISING_DAMAGE_MULT = 0.8;
+
+	// EffectImpactShot
+	public static final double POWERUP_IMPACT_DAMAGE_MULT = 2.0;
+	public static final double POWERUP_IMPACT_SPEED_MULT = 2.0;
+	public static final double POWERUP_IMPACT_RELOAD_MULT = 1.5;
+	public static final int POWERUP_IMPACT_INTERVAL_ADD = 60;
+
+	// EffectDanmaku
+	public static final int POWERUP_DANMAKU_PELLETS_ADD = 4;
+	public static final double POWERUP_DANMAKU_RELOAD_MULT = 1.3;
+
+	// EffectReelGun
+	public static final int POWERUP_REEL_BURST_ADD = 2;
+	public static final double POWERUP_REEL_RELOAD_MULT = 1.3;
+
+	// EffectShower
+	public static final int POWERUP_SHOWER_PELLETS_ADD = 14;
+	public static final double POWERUP_SHOWER_RELOAD_MULT = 1.5;
+	public static final double POWERUP_SHOWER_DAMAGE_MULT = 0.3;
+
+	// EffectReflection
+	public static final int POWERUP_REFLECT_BOUNCE_ADD = 2;
+	public static final double POWERUP_REFLECT_DAMAGE_MULT = 1.1;
+	public static final double POWERUP_REFLECT_RELOAD_MULT = 1.2;
+
+	// EffectOutOfControl
+	public static final int POWERUP_CONTROL_BOUNCE_ADD = 5;
+	public static final double POWERUP_CONTROL_SPEED_MULT = 1.2;
+	public static final double POWERUP_CONTROL_RELOAD_MULT = 1.3;
+
+	// EffectIdaten
+	public static final double POWERUP_IDATEN_SPEED_MULT = 2.0;
+	public static final double POWERUP_IDATEN_DAMAGE_MULT = 0.6;
+	public static final double POWERUP_IDATEN_HP_MULT = 0.8;
+
+	// EffectColdShot
+	public static final double POWERUP_COLD_RELOAD_MULT = 1.5;
+
+	// Effect3in1
+	public static final double POWERUP_3IN1_DAMAGE_MULT = 2.0;
+	public static final double POWERUP_3IN1_SPEED_MULT = 2.0;
+	public static final int POWERUP_3IN1_AMMO_SUB = 2;
+	public static final double POWERUP_3IN1_RELOAD_MULT = 1.5;
+
+	// EffectPoison / Ghost
+	public static final double POWERUP_POISON_RELOAD_MULT = 1.25;
+	public static final double POWERUP_GHOST_RELOAD_MULT = 1.25;
+
+	// EffectQuickReload
+	public static final double POWERUP_QUICK_RELOAD_MULT = 0.5;
+
+	// EffectExtendedMag
 	public static final int EFFECT_EXTMAG_AMOUNT = 5;
+
+	// Tank / BigBoy
 	public static final int POWERUP_TANK_HP_BONUS = 50;
-	public static final double POWERUP_TANK_SIZE_MULT = 1.8;
-	public static final int POWERUP_ROGUE_FIXED_HP = 70;
-	public static final double POWERUP_ROGUE_SIZE_MULT = 0.6;
+	public static final double POWERUP_TANK_SIZE_MULT = 2.0; // 元コードに合わせて修正(1.8->2.0)
+
+	// Rogue / SmallBoy
+	public static final int POWERUP_ROGUE_FIXED_HP = 50; // 元コードに合わせて修正
+	public static final double POWERUP_ROGUE_SIZE_MULT = 0.5;
 	public static final double POWERUP_ROGUE_SPEED_MULT = 1.3;
+
+	// Skills
+	public static final double SKILL_EXC_DEFENSE_HP_MULT = 1.3;
 }
