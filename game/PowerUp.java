@@ -2,7 +2,6 @@ package game;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import static game.GameConstants.*;
 
 public abstract class PowerUp {
 	public String name, desc, merit, demerit;
