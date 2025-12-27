@@ -13,7 +13,9 @@ public class GameConstants {
 	public static final int MAP_Y = 80;
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
-	public static final double MAP_COLLISION_BUFFER = 2.0; // 衝突判定のバッファ (壁にめり込まないようにする余白)
+
+	// 修正: 衝突判定のバッファ (壁にめり込まないようにする余白)
+	public static final double MAP_COLLISION_BUFFER = 2.0;
 
 	// UI レイアウト
 	public static final int UI_AMMO_Y_OFFSET = 30;
@@ -49,7 +51,7 @@ public class GameConstants {
 	public static final int GUARD_COOLDOWN = 300;
 	public static final double GUARD_DAMAGE_CUT_RATE = 0.1;
 
-	// テレポート距離
+	// 修正: テレポート距離
 	public static final double SKILL_TELEPORT_DISTANCE = 150.0;
 
 	// === 武器・弾丸 基本設定 ===
@@ -58,6 +60,9 @@ public class GameConstants {
 	public static final int WEAPON_DEFAULT_DAMAGE = 20;
 	public static final double WEAPON_DEFAULT_SPEED = 10.0;
 	public static final int WEAPON_DEFAULT_SIZE = 8;
+
+	// 修正: ゴースト弾の貫通有効時間 (1秒 = 60フレーム)
+	public static final int GHOST_VALID_TIME = 60;
 
 	// バースト射撃設定
 	public static final int WEAPON_BURST_INTERVAL = 5;
@@ -92,7 +97,7 @@ public class GameConstants {
 	public static final Color COLOR_GUARD_SHIELD = new Color(0, 255, 255, 100);
 	public static final Color COLOR_GUARD_COOLDOWN = new Color(100, 100, 255);
 
-	// === パワーアップ・スキル用定数 ===
+	// === // 修正: パワーアップ・スキル用定数 (マジックナンバー解消) ===
 
 	// EffectHill
 	public static final double POWERUP_HILL_DAMAGE_MULT = 0.6;
@@ -156,10 +161,10 @@ public class GameConstants {
 
 	// Tank / BigBoy
 	public static final int POWERUP_TANK_HP_BONUS = 50;
-	public static final double POWERUP_TANK_SIZE_MULT = 2.0; // 元コードに合わせて修正(1.8->2.0)
+	public static final double POWERUP_TANK_SIZE_MULT = 2.0;
 
 	// Rogue / SmallBoy
-	public static final int POWERUP_ROGUE_FIXED_HP = 50; // 元コードに合わせて修正
+	public static final int POWERUP_ROGUE_FIXED_HP = 50;
 	public static final double POWERUP_ROGUE_SIZE_MULT = 0.5;
 	public static final double POWERUP_ROGUE_SPEED_MULT = 1.3;
 

@@ -33,14 +33,14 @@ public class GameLogic {
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
 
-		// テレポート安全化などのため obstacles を渡す
+		// 修正: テレポート安全化のため obstacles を渡す
 		if (input.isRightMousePressed) me.tryGuard(obstacles);
 
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
 		if (input.isMousePressed && !wasMousePressed) {
-			// 緊急防御などのため obstacles を渡す
+			// 修正: 緊急防御スキル判定のため obstacles を渡す
 			me.weapon.tryShoot(out, myId, obstacles);
 		}
 		wasMousePressed = input.isMousePressed;
@@ -64,11 +64,13 @@ public class GameLogic {
 		}
 
 		// 壁(障害物)との判定
-		if (!hitBoundary && (b.typeFlag & FLAG_GHOST) == 0) {
+		// 修正: ゴースト弾でも一定時間経過したら壁判定を行う
+		if (!hitBoundary && ((b.typeFlag & FLAG_GHOST) == 0 || b.lifeTimer > GHOST_VALID_TIME)) {
+
 			for (Line2D.Double wall : obstacles) {
 				if (wall.ptSegDist(b.x, b.y) < b.size) {
 					if (canBounce(b)) {
-						// === 修正箇所: 壁の「面」と「端(角)」を区別して反射方向を決める ===
+						// 修正: 壁の「面」と「端(角)」を区別して反射方向を決める
 
 						// 壁が水平(横向き)かどうか
 						boolean isHorizontal = Math.abs(wall.y1 - wall.y2) < 1.0;
@@ -83,7 +85,6 @@ public class GameLogic {
 								b.angle = -b.angle;
 							} else {
 								// 範囲外なら「端(左右)」に当たった -> X反転 (PI - angle)
-								// これにより、水平に撃って端に当たった弾が正しく跳ね返ります
 								b.angle = Math.PI - b.angle;
 							}
 						} else {
@@ -99,6 +100,7 @@ public class GameLogic {
 								b.angle = -b.angle;
 							}
 						}
+						// 修正終了
 
 						b.bounceCount++;
 					} else hitBoundary = true;
@@ -149,6 +151,7 @@ public class GameLogic {
 			if (!b.isActive) {
 				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
 
+				// // 修正: 反射回数の設定ロジック修正
 				if(extraBounces > 0) {
 					b.typeFlag |= FLAG_BOUNCE;
 					b.maxBounces = extraBounces;
