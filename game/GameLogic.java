@@ -33,14 +33,14 @@ public class GameLogic {
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
 
-		// 修正: obstaclesを渡す
+		// テレポート安全化などのため obstacles を渡す
 		if (input.isRightMousePressed) me.tryGuard(obstacles);
 
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
 		if (input.isMousePressed && !wasMousePressed) {
-			// 修正: obstaclesを渡す
+			// 緊急防御などのため obstacles を渡す
 			me.weapon.tryShoot(out, myId, obstacles);
 		}
 		wasMousePressed = input.isMousePressed;
@@ -55,6 +55,7 @@ public class GameLogic {
 	private void checkBulletCollision(Bullet b, Player me, int myId, PrintWriter out) {
 		boolean hitBoundary = false;
 
+		// 画面端の判定
 		if (b.x < MAP_X || b.x > MAP_X + MAP_WIDTH) {
 			if (canBounce(b)) { b.angle = Math.PI - b.angle; b.bounceCount++; } else hitBoundary = true;
 		}
@@ -62,11 +63,43 @@ public class GameLogic {
 			if (canBounce(b)) { b.angle = -b.angle; b.bounceCount++; } else hitBoundary = true;
 		}
 
+		// 壁(障害物)との判定
 		if (!hitBoundary && (b.typeFlag & FLAG_GHOST) == 0) {
 			for (Line2D.Double wall : obstacles) {
 				if (wall.ptSegDist(b.x, b.y) < b.size) {
 					if (canBounce(b)) {
-						if (Math.abs(wall.y1 - wall.y2) < 1.0) b.angle = -b.angle; else b.angle = Math.PI - b.angle;
+						// === 修正箇所: 壁の「面」と「端(角)」を区別して反射方向を決める ===
+
+						// 壁が水平(横向き)かどうか
+						boolean isHorizontal = Math.abs(wall.y1 - wall.y2) < 1.0;
+
+						if (isHorizontal) {
+							// 横壁の場合
+							double minX = Math.min(wall.x1, wall.x2);
+							double maxX = Math.max(wall.x1, wall.x2);
+
+							// 弾のX座標が壁の範囲内なら「側面(上下)」に当たった -> Y反転 (-angle)
+							if (b.x >= minX && b.x <= maxX) {
+								b.angle = -b.angle;
+							} else {
+								// 範囲外なら「端(左右)」に当たった -> X反転 (PI - angle)
+								// これにより、水平に撃って端に当たった弾が正しく跳ね返ります
+								b.angle = Math.PI - b.angle;
+							}
+						} else {
+							// 縦壁の場合
+							double minY = Math.min(wall.y1, wall.y2);
+							double maxY = Math.max(wall.y1, wall.y2);
+
+							// 弾のY座標が壁の範囲内なら「側面(左右)」に当たった -> X反転 (PI - angle)
+							if (b.y >= minY && b.y <= maxY) {
+								b.angle = Math.PI - b.angle;
+							} else {
+								// 範囲外なら「端(上下)」に当たった -> Y反転 (-angle)
+								b.angle = -b.angle;
+							}
+						}
+
 						b.bounceCount++;
 					} else hitBoundary = true;
 					break;
@@ -76,6 +109,7 @@ public class GameLogic {
 
 		if (hitBoundary) b.deactivate();
 
+		// プレイヤーへのヒット判定
 		if (b.isActive && (b.ownerId != myId || b.lifeTimer > BULLET_SAFE_TIME)) {
 			if (me.getBounds().contains(b.x, b.y)) {
 
