@@ -1,0 +1,151 @@
+@charset "UTF-8";
+
+/* --- 定数・変数の定義 --- */
+:root {
+	--color-bg: #141923;
+	--color-grid: #283246;
+	--color-wall: #00ffff;
+	--color-p-me: #6496ff;
+	--color-p-en: #ff6464;
+	--color-text: #ffffff;
+	--font-main: "Helvetica Neue", Arial, sans-serif;
+
+	/* アニメーション設定 */
+	--scroll-height: 400vh; /* スクロール領域を少し長くして動きを見やすく */
+}
+
+/* --- リセット & 基本スタイル --- */
+body, html {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-main);
+}
+
+/* --- スクロール演出エリア (Hero Section) --- */
+.scroll-container {
+	position: relative;
+	height: var(--scroll-height);
+	background-color: var(--color-bg); /* 背景色を明示 */
+}
+
+.sticky-viewport {
+	position: sticky;
+	top: 0;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	/* 3D効果の基準点 */
+	perspective: 1200px;
+}
+
+/* 背景グリッド */
+.bg-grid {
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background-image:
+			linear-gradient(rgba(40, 50, 70, 0.3) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(40, 50, 70, 0.3) 1px, transparent 1px);
+	background-size: 50px 50px;
+	z-index: 1; /* 一番奥 */
+	transform: perspective(500px) rotateX(60deg);
+	/* アニメーションは削除して負荷を軽減 */
+}
+
+/* キャッチコピー */
+.hero-text {
+	position: absolute;
+	z-index: 10; /* ゲーム画面より手前 */
+	text-align: center;
+	width: 100%;
+	will-change: transform, opacity;
+}
+
+.hero-text h1 {
+	font-size: clamp(3rem, 8vw, 6rem); /* 最大サイズを少し抑制 */
+	font-weight: 900;
+	margin: 0 0 20px 0;
+	line-height: 1.1;
+	color: #ffffff;
+	/* 文字を光らせる */
+	text-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+.hero-text p {
+	font-size: clamp(1rem, 2vw, 1.5rem);
+	color: #cccccc;
+	font-weight: bold;
+	text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* ゲーム画面コンテナ */
+.game-window-wrapper {
+	position: absolute; /* absoluteに変更して中央固定を強化 */
+	top: 50%;
+	left: 50%;
+	/* 中心を基準に変形させる */
+	transform: translate(-50%, -50%) scale(0.5);
+	width: 800px;
+	height: 500px;
+	z-index: 5; /* テキストより奥 */
+	opacity: 0; /* 初期状態は透明 */
+	transform-style: preserve-3d;
+	will-change: transform, opacity;
+}
+
+/* ゲーム画面本体 */
+.game-screen {
+	width: 100%;
+	height: 100%;
+	background-color: #000000; /* 背景を真っ黒にしてコントラスト確保 */
+	border: 4px solid var(--color-wall);
+	box-shadow: 0 0 80px rgba(0, 255, 255, 0.2);
+	position: relative;
+	overflow: hidden;
+	border-radius: 12px;
+}
+
+/* UIパーツ */
+.ui-bar { position: absolute; top: 20px; height: 8px; background: #333; width: 200px; border-radius: 4px; }
+.ui-bar.p1 { left: 20px; }
+.ui-bar.p1::after { content:''; display:block; width:100%; height:100%; background:var(--color-p-me); box-shadow: 0 0 10px var(--color-p-me); border-radius: 4px; }
+.ui-bar.p2 { right: 20px; }
+.ui-bar.p2::after { content:''; display:block; width:100%; height:100%; background:var(--color-p-en); box-shadow: 0 0 10px var(--color-p-en); border-radius: 4px; }
+
+/* プレイヤー */
+.player { position: absolute; width: 30px; height: 30px; border-radius: 50%; transform: translate(-50%, -50%); border: 2px solid #fff; }
+.player.me { background: var(--color-p-me); box-shadow: 0 0 20px var(--color-p-me); top: 60%; left: 30%; }
+.player.enemy { background: var(--color-p-en); box-shadow: 0 0 20px var(--color-p-en); top: 40%; left: 70%; }
+
+/* 壁 */
+.wall { position: absolute; background: var(--color-wall); box-shadow: 0 0 15px var(--color-wall); opacity: 0.8; }
+.wall.cross-h { top: 50%; left: 50%; width: 200px; height: 10px; transform: translate(-50%, -50%); }
+.wall.cross-v { top: 50%; left: 50%; width: 10px; height: 200px; transform: translate(-50%, -50%); }
+
+/* --- コンテンツセクション --- */
+.content-section {
+	position: relative;
+	z-index: 20;
+	background: var(--color-bg);
+	padding: 80px 20px;
+	text-align: center;
+	box-shadow: 0 -50px 100px var(--color-bg); /* 上との境目をぼかす */
+}
+
+/* その他のスタイルは維持 */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; max-width: 1200px; margin: 0 auto; }
+.feature-card { background: rgba(255,255,255,0.05); padding: 30px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; }
+.feature-icon { font-size: 3rem; margin-bottom: 20px; color: var(--color-wall); }
+h2 { font-size: 2.5rem; margin-bottom: 50px; color: #fff; }
+h3 { font-size: 1.5rem; margin-bottom: 10px; color: var(--color-p-me); }
+p { line-height: 1.8; color: #ccc; }
+.btn-download { display: inline-block; margin-top: 50px; padding: 20px 60px; background: linear-gradient(45deg, var(--color-p-me), var(--color-wall)); color: #000; font-weight: bold; text-decoration: none; font-size: 1.5rem; border-radius: 50px; }
+.site-footer { text-align: center; padding: 20px; color: #666; }

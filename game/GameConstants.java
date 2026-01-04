@@ -62,7 +62,7 @@ public class GameConstants {
 	public static final int WEAPON_DEFAULT_SIZE = 8;
 
 	// 修正: ゴースト弾の貫通有効時間 (1秒 = 60フレーム)
-	public static final int GHOST_VALID_TIME = 60;
+	public static final int GHOST_VALID_TIME = 30;
 
 	// バースト射撃設定
 	public static final int WEAPON_BURST_INTERVAL = 5;
