@@ -235,7 +235,8 @@ class EffectShotgun extends WeaponEffect {
 	public void applyStats(Weapon w) {
 		w.pelletsPerShot += POWERUP_SHOTGUN_PELLETS_ADD;
 		w.damage *= POWERUP_SHOTGUN_DAMAGE_MULT;
-		w.bulletLifeTime = POWERUP_SHOTGUN_LIFE;
+		// 距離(300) / 速度 = 寿命時間
+		w.bulletLifeTime = (int)(POWERUP_SHOTGUN_RANGE / w.bulletSpeed);
 		w.spreadAngle = POWERUP_SHOTGUN_SPREAD; // 拡散角度を設定
 		w.randomSpeed = true;
 	}
