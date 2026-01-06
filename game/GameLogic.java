@@ -250,4 +250,23 @@ public class GameLogic {
 			presentedPowerUps = PowerUpFactory.getRandomPowerUps(3);
 		}
 	}
+
+	/**
+	 * ゲーム終了時やタイトルに戻る際に、ゲームの状態を完全にリセットします。
+	 */
+	public void resetGame() {
+		// 1. 弾丸の全消去
+		for(Bullet b : bulletPool) b.deactivate();
+
+		// 2. プレイヤー情報のクリア
+		players.clear();
+		joinedPlayers.clear();
+
+		// 3. スコア・障害物のリセット
+		myWinCount = 0;
+		enemyWinCount = 0;
+		resultMessage = "";
+		obstacles.clear();
+		presentedPowerUps.clear();
+	}
 }

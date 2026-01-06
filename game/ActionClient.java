@@ -140,15 +140,14 @@ public class ActionClient extends JFrame {
 
 	/**
 	 * ゲームオーバー後、タイトル画面に戻る処理です。
+	 * resetGame()を呼び出して弾丸なども全て消去します。
 	 */
 	public void backToTitle() {
 		currentState = GameState.TITLE;
-		logic.joinedPlayers.clear();
-		logic.players.clear();
-		logic.myWinCount = 0;
-		logic.enemyWinCount = 0;
-		logic.resultMessage = "";
-		// 自分のプレイヤーオブジェクトを再生成して初期位置へ
+		// ゲームロジック側で一括リセット（弾丸、スコア、プレイヤー等）
+		logic.resetGame();
+
+		// 自分のプレイヤーオブジェクトを再生成して初期位置へ配置
 		logic.players.put(myId, new Player(myId, MAP_X + 100, MAP_Y + 200, COLOR_PLAYER_ME));
 	}
 
@@ -245,7 +244,7 @@ public class ActionClient extends JFrame {
 					p.weapon.reloadDuration = Integer.parseInt(tokens[4]);
 				}
 
-				// 最大ガードクールダウンの同期
+				// 【追加】最大ガードクールダウンの同期
 				if(tokens.length > 5) {
 					p.currentMaxGuardCooldown = Integer.parseInt(tokens[5]);
 				}
