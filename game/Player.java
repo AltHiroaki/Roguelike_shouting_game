@@ -31,6 +31,7 @@ public class Player {
 	public boolean isGuarding = false;
 	public int guardTimer = 0;
 	public int guardCooldownTimer = 0;
+	public int currentMaxGuardCooldown = GUARD_COOLDOWN; // 現在のスキルのクールダウン最大値（描画用）
 
 	// --- 所持スキル ---
 	public boolean hasSkillTacticalReload = false;
@@ -42,6 +43,8 @@ public class Player {
 	// 新規スキル
 	public boolean hasSkillSelfRegen = false; // 自己再生
 	public boolean hasSkillTheWorld = false;  // "世界"
+
+	public boolean triggerTheWorldFrame = false; // "世界"が発動した瞬間のフレームかどうか
 
 	// --- 所持パッシブ ---
 	public boolean hasPassiveThirst = false;
@@ -90,6 +93,8 @@ public class Player {
 		delayDamageBuffer = 0;
 		invisibleTimer = 0;
 		exclusiveDefenseTimer = 0;
+		currentMaxGuardCooldown = GUARD_COOLDOWN;
+		triggerTheWorldFrame = false;
 		weapon.reset();
 	}
 
@@ -168,9 +173,12 @@ public class Player {
 			// "世界": CD+5秒
 			if (hasSkillTheWorld) {
 				cooldownAdd += SKILL_THE_WORLD_CD_ADD;
+				triggerTheWorldFrame = true; // フラグを立てる
 			}
 
-			guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
+			// 今回のクールダウン最大値を保存
+			currentMaxGuardCooldown = GUARD_COOLDOWN + cooldownAdd;
+			guardCooldownTimer = currentMaxGuardCooldown;
 		}
 	}
 
@@ -210,9 +218,11 @@ public class Player {
 		}
 		if (hasSkillTheWorld) {
 			cooldownAdd += SKILL_THE_WORLD_CD_ADD;
+			triggerTheWorldFrame = true; // フラグを立てる
 		}
 
-		guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
+		currentMaxGuardCooldown = GUARD_COOLDOWN + cooldownAdd;
+		guardCooldownTimer = currentMaxGuardCooldown;
 	}
 
 	/**
@@ -318,9 +328,16 @@ public class Player {
 		angle = Math.atan2(my - y, mx - x);
 		// 1. フラグ圧縮 (ビット演算でまとめる)
 		int flags = 0;
-		if (weapon.isReloading) flags |= 1;       // 1ビット目を立てる (001)
-		if (isGuarding) flags |= 2;       // 2ビット目を立てる (010)
-		if (invisibleTimer > 0) flags |= 4;       // 3ビット目を立てる (100)
+		if (weapon.isReloading) flags |= P_FLAG_RELOAD;    // 1ビット目
+		if (isGuarding)         flags |= P_FLAG_GUARD;     // 2ビット目
+		if (invisibleTimer > 0) flags |= P_FLAG_INVISIBLE; // 3ビット目
+
+		// "世界"の発動瞬間
+		if (triggerTheWorldFrame) {
+			flags |= P_FLAG_THE_WORLD; // 4ビット目
+			triggerTheWorldFrame = false; // 送信したのでオフ
+		}
+
 		// 2. 角度の桁数制限 (String.formatで小数点2桁に)
 		String shortAngle = String.format("%.2f", angle);
 		// 3. 短縮版メッセージを送信
@@ -397,7 +414,8 @@ public class Player {
 			g2d.setColor(Color.GRAY);
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(COLOR_GUARD_COOLDOWN);
-			double progress = 1.0 - ((double) guardCooldownTimer / GUARD_COOLDOWN);
+			// 今回の最大クールダウン値を使用して割合を計算
+			double progress = 1.0 - ((double) guardCooldownTimer / currentMaxGuardCooldown);
 			if (progress < 0) progress = 0;
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, (int) (40 * progress), UI_BAR_HEIGHT);
 		}

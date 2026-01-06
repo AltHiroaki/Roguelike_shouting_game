@@ -43,7 +43,15 @@ public class GameLogic {
 		Player me = players.get(myId);
 
 		// 右クリックでガード試行（テレポート安全化のため obstacles を渡す）
-		if (input.isRightMousePressed) me.tryGuard(obstacles);
+		if (input.isRightMousePressed) {
+			boolean wasGuarding = me.isGuarding;
+			me.tryGuard(obstacles);
+
+			// ガード開始の瞬間、かつスキル持ちなら発動
+			if (!wasGuarding && me.isGuarding && me.hasSkillTheWorld) {
+				executeTheWorld(me);
+			}
+		}
 
 		// プレイヤー自身の移動・更新
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
@@ -51,13 +59,16 @@ public class GameLogic {
 
 		// 左クリックで射撃試行（押しっぱなし判定防止のためフラグ管理）
 		if (input.isMousePressed && !wasMousePressed) {
+			boolean wasGuarding = me.isGuarding;
 			// 緊急防御スキル判定のため obstacles を渡す
 			me.weapon.tryShoot(out, myId, obstacles);
+
+			// 射撃時の緊急防御などでガードが発動した場合もチェック
+			if (!wasGuarding && me.isGuarding && me.hasSkillTheWorld) {
+				executeTheWorld(me);
+			}
 		}
 		wasMousePressed = input.isMousePressed;
-
-		// "世界" スキル: ガード中のプレイヤーがいれば、その周囲の弾を消去
-		checkTheWorldSkill();
 
 		// 弾丸の更新と衝突判定
 		for (Bullet b : bulletPool) {
@@ -67,18 +78,17 @@ public class GameLogic {
 		}
 	}
 
-	private void checkTheWorldSkill() {
-		for (Player p : players.values()) {
-			if (p.isGuarding && p.hasSkillTheWorld) {
-				for (Bullet b : bulletPool) {
-					if (b.isActive) {
-						// 距離チェック
-						double dist = Math.sqrt(Math.pow(b.x - p.x, 2) + Math.pow(b.y - p.y, 2));
-						if (dist < SKILL_THE_WORLD_RANGE) {
-							// 弾を消す
-							b.deactivate();
-						}
-					}
+	/**
+	 * "世界"スキル発動：一瞬だけ周囲の弾丸を消去する
+	 */
+	public void executeTheWorld(Player p) {
+		for (Bullet b : bulletPool) {
+			if (b.isActive) {
+				// 距離チェック
+				double dist = Math.sqrt(Math.pow(b.x - p.x, 2) + Math.pow(b.y - p.y, 2));
+				if (dist < SKILL_THE_WORLD_RANGE) {
+					// 弾を消す
+					b.deactivate();
 				}
 			}
 		}

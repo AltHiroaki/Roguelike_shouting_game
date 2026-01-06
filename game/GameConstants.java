@@ -117,6 +117,12 @@ public class GameConstants {
 	public static final int FLAG_COLD = 1 << 3;
 	public static final int FLAG_GHOST = 1 << 4;
 
+	// プレイヤーの状態フラグ (MOVEコマンド送信用)
+	public static final int P_FLAG_RELOAD    = 1;      // 0001
+	public static final int P_FLAG_GUARD     = 2;      // 0010
+	public static final int P_FLAG_INVISIBLE = 4;      // 0100
+	public static final int P_FLAG_THE_WORLD = 8;      // 1000 ("世界"発動通知用)
+
 	// カラー定義
 	public static final Color COLOR_BG = new Color(20, 25, 35);
 	public static final Color COLOR_GRID = new Color(40, 50, 70);

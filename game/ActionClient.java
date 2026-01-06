@@ -218,12 +218,19 @@ public class ActionClient extends JFrame {
 
 					// フラグの展開 (ビット演算で復元)
 					int flags = Integer.parseInt(tokens[7]);
-					p.weapon.isReloading = (flags & 1) != 0; // 1ビット目をチェック
-					p.isGuarding         = (flags & 2) != 0; // 2ビット目をチェック
-					boolean isInvisible  = (flags & 4) != 0; // 3ビット目をチェック
+					p.weapon.isReloading = (flags & P_FLAG_RELOAD) != 0;
+					p.isGuarding         = (flags & P_FLAG_GUARD) != 0;
+					boolean isInvisible  = (flags & P_FLAG_INVISIBLE) != 0;
 
 					// 透明化タイマーの簡易設定 (表示用なので0か正の値があればOK)
 					p.invisibleTimer = isInvisible ? 10 : 0;
+
+					// "世界"の発動フラグチェック
+					boolean triggeredTheWorld = (flags & P_FLAG_THE_WORLD) != 0;
+					if (triggeredTheWorld) {
+						// 相手が発動したので、自分の画面の弾も消去
+						logic.executeTheWorld(p);
+					}
 				}
 			} else if (cmd.equals("STATUS")) {
 				// 他プレイヤーのステータス更新（最大HP、サイズ、リロード時間）
