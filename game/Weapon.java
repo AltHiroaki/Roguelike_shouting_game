@@ -147,10 +147,17 @@ public class Weapon {
 
 			if (pelletsPerShot > 1) {
 				if (randomSpeed) {
-					currentAngle += (Math.random() - 0.5) * 1.0;
-					speed = bulletSpeed * (0.98 + Math.random() * 0.04);
+					// spreadAngleが設定されていればその範囲で、そうでなければデフォルト(1.0ラジアン)で拡散
+					double range = (spreadAngle > 0) ? spreadAngle : 1.0;
+					currentAngle += (Math.random() - 0.5) * range;
+					// 速度のバラつき
+					speed = bulletSpeed * (0.9 + Math.random() * 0.2);
 				} else {
 					double step = 0.2;
+					// 拡散角度が設定されている場合、その範囲内に等間隔で配置
+					if (spreadAngle > 0) {
+						step = spreadAngle / (pelletsPerShot - 1);
+					}
 					double offset = (i - (pelletsPerShot - 1) / 2.0) * step;
 					currentAngle += offset;
 				}
@@ -229,6 +236,8 @@ class EffectShotgun extends WeaponEffect {
 		w.pelletsPerShot += POWERUP_SHOTGUN_PELLETS_ADD;
 		w.damage *= POWERUP_SHOTGUN_DAMAGE_MULT;
 		w.bulletLifeTime = POWERUP_SHOTGUN_LIFE;
+		w.spreadAngle = POWERUP_SHOTGUN_SPREAD; // 拡散角度を設定
+		w.randomSpeed = true;
 	}
 }
 class EffectBuildUp extends WeaponEffect {

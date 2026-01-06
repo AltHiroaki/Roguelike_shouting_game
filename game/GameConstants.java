@@ -216,6 +216,7 @@ public class GameConstants {
 	public static final int POWERUP_SHOTGUN_PELLETS_ADD = 20;
 	public static final double POWERUP_SHOTGUN_DAMAGE_MULT = 1.1;
 	public static final int POWERUP_SHOTGUN_LIFE = 60; // 1秒
+	public static final double POWERUP_SHOTGUN_SPREAD = Math.toRadians(45); // 拡散角度
 
 	// 自己再生 (Self Regen)
 	public static final double SKILL_REGEN_RATE = 0.3; // 30%
