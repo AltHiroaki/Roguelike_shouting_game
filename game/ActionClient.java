@@ -233,15 +233,23 @@ public class ActionClient extends JFrame {
 					}
 				}
 			} else if (cmd.equals("STATUS")) {
-				// 他プレイヤーのステータス更新（最大HP、サイズ、リロード時間）
+				// STATUS id maxHp size reloadDuration maxGuardCooldown
 				int id = Integer.parseInt(tokens[1]);
 				Player p = logic.players.computeIfAbsent(id, k -> new Player(id, 0, 0, (id==myId)?COLOR_PLAYER_ME:COLOR_PLAYER_ENEMY));
+
 				p.maxHp = Integer.parseInt(tokens[2]);
 				p.size = Integer.parseInt(tokens[3]);
+
 				// リロード時間の同期
 				if(tokens.length > 4) {
 					p.weapon.reloadDuration = Integer.parseInt(tokens[4]);
 				}
+
+				// 最大ガードクールダウンの同期
+				if(tokens.length > 5) {
+					p.currentMaxGuardCooldown = Integer.parseInt(tokens[5]);
+				}
+
 			} else if (cmd.equals("SHOT")) {
 				// 弾の発射情報受信
 				int bId = Integer.parseInt(tokens[1]);

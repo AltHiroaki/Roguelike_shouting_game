@@ -136,6 +136,23 @@ public class Player {
 	}
 
 	/**
+	 * 現在のスキル所持状況に基づいて、ガードの最大クールダウン時間を計算します。
+	 * tryGuard内とsendStatus内で共通して使用します。
+	 */
+	public int calculateMaxGuardCooldown() {
+		int total = GUARD_COOLDOWN;
+
+		if (hasSkillTacticalReload)   total += 120;
+		if (hasSkillExclusiveDefense) total += 120;
+		if (hasSkillInvisible)        total += 300;
+		if (hasSkillTeleport)         total += 120;
+		if (hasSkillSelfRegen)        total += SKILL_REGEN_CD_ADD;
+		if (hasSkillTheWorld)         total += SKILL_THE_WORLD_CD_ADD;
+
+		return total;
+	}
+
+	/**
 	 * プレイヤーのガードを試みます。
 	 * クールダウン中でなければガード状態に移行し、関連スキルの発動処理も行います。
 	 *
@@ -145,39 +162,25 @@ public class Player {
 		if (guardCooldownTimer <= 0 && !isGuarding) {
 			isGuarding = true;
 			guardTimer = GUARD_DURATION;
-			int cooldownAdd = 0;
 
 			// 各種ガード連動スキルの発動
-			if (hasSkillTacticalReload) {
-				weapon.currentAmmo = weapon.maxAmmo;
-				cooldownAdd += 120;
-			}
-			if (hasSkillExclusiveDefense) {
-				exclusiveDefenseTimer = 120;
-				cooldownAdd += 120;
-			}
-			if (hasSkillInvisible) {
-				invisibleTimer = 30;
-				cooldownAdd += 300;
-			}
-			if (hasSkillTeleport) {
-				teleport(obstacles);
-				cooldownAdd += 120;
-			}
+			if (hasSkillTacticalReload)   weapon.currentAmmo = weapon.maxAmmo;
+			if (hasSkillExclusiveDefense) exclusiveDefenseTimer = 120;
+			if (hasSkillInvisible)        invisibleTimer = 30;
+			if (hasSkillTeleport)         teleport(obstacles);
+
 			// 自己再生: HP回復 + CD2秒
 			if (hasSkillSelfRegen) {
 				int heal = (int) (maxHp * SKILL_REGEN_RATE);
 				hp = Math.min(hp + heal, maxHp);
-				cooldownAdd += SKILL_REGEN_CD_ADD;
 			}
 			// "世界": CD+5秒
 			if (hasSkillTheWorld) {
-				cooldownAdd += SKILL_THE_WORLD_CD_ADD;
 				triggerTheWorldFrame = true; // フラグを立てる
 			}
 
-			// 今回のクールダウン最大値を保存
-			currentMaxGuardCooldown = GUARD_COOLDOWN + cooldownAdd;
+			// 共通メソッドを使って最大値を設定
+			currentMaxGuardCooldown = calculateMaxGuardCooldown();
 			guardCooldownTimer = currentMaxGuardCooldown;
 		}
 	}
@@ -193,35 +196,22 @@ public class Player {
 		isGuarding = true;
 		guardTimer = GUARD_DURATION;
 
-		int cooldownAdd = 0;
 		// スキル効果の発動（通常ガードと同様）
-		if (hasSkillTacticalReload) {
-			weapon.currentAmmo = weapon.maxAmmo;
-			cooldownAdd += 120;
-		}
-		if (hasSkillExclusiveDefense) {
-			exclusiveDefenseTimer = 120;
-			cooldownAdd += 120;
-		}
-		if (hasSkillInvisible) {
-			invisibleTimer = 30;
-			cooldownAdd += 300;
-		}
-		if (hasSkillTeleport) {
-			teleport(obstacles);
-			cooldownAdd += 120;
-		}
+		if (hasSkillTacticalReload)   weapon.currentAmmo = weapon.maxAmmo;
+		if (hasSkillExclusiveDefense) exclusiveDefenseTimer = 120;
+		if (hasSkillInvisible)        invisibleTimer = 30;
+		if (hasSkillTeleport)         teleport(obstacles);
+
 		if (hasSkillSelfRegen) {
 			int heal = (int) (maxHp * SKILL_REGEN_RATE);
 			hp = Math.min(hp + heal, maxHp);
-			cooldownAdd += SKILL_REGEN_CD_ADD;
 		}
 		if (hasSkillTheWorld) {
-			cooldownAdd += SKILL_THE_WORLD_CD_ADD;
 			triggerTheWorldFrame = true; // フラグを立てる
 		}
 
-		currentMaxGuardCooldown = GUARD_COOLDOWN + cooldownAdd;
+		// 共通メソッドを使って最大値を設定
+		currentMaxGuardCooldown = calculateMaxGuardCooldown();
 		guardCooldownTimer = currentMaxGuardCooldown;
 	}
 
@@ -463,9 +453,8 @@ public class Player {
 
 	/**
 	 * サーバーへ現在のステータス（HP最大値など）を送信します。
-	 * 変更: リロード時間も送信するようにしました。
 	 */
 	public void sendStatus(PrintWriter out) {
-		out.println("STATUS " + id + " " + maxHp + " " + size + " " + weapon.reloadDuration);
+		out.println("STATUS " + id + " " + maxHp + " " + size + " " + weapon.reloadDuration + " " + calculateMaxGuardCooldown());
 	}
 }
