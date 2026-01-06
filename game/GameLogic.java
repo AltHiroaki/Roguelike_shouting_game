@@ -9,7 +9,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import static game.GameConstants.*;
 
+/**
+ * ゲームのロジック判定を行うクラス。
+ * プレイヤーの更新、弾丸の管理、衝突判定（当たり判定）などを担当します。
+ */
 public class GameLogic {
+	// スレッドセーフなマップでプレイヤーを管理
 	public ConcurrentHashMap<Integer, Player> players = new ConcurrentHashMap<>();
 	public Bullet[] bulletPool = new Bullet[MAX_BULLETS];
 	public ArrayList<Line2D.Double> obstacles = new ArrayList<>();
@@ -25,26 +30,33 @@ public class GameLogic {
 	public static int frameCount = 0;
 
 	public GameLogic() {
+		// オブジェクトプールパターンのため、弾丸インスタンスを事前生成
 		for (int i = 0; i < MAX_BULLETS; i++) bulletPool[i] = new Bullet();
 	}
 
+	/**
+	 * 毎フレーム呼ばれる更新処理。
+	 */
 	public void update(int myId, InputHandler input, PrintWriter out) {
 		frameCount++;
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
 
-		// テレポート安全化のため obstacles を渡す
+		// 右クリックでガード試行（テレポート安全化のため obstacles を渡す）
 		if (input.isRightMousePressed) me.tryGuard(obstacles);
 
+		// プレイヤー自身の移動・更新
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
+		// 左クリックで射撃試行（押しっぱなし判定防止のためフラグ管理）
 		if (input.isMousePressed && !wasMousePressed) {
 			// 緊急防御スキル判定のため obstacles を渡す
 			me.weapon.tryShoot(out, myId, obstacles);
 		}
 		wasMousePressed = input.isMousePressed;
 
+		// 弾丸の更新と衝突判定
 		for (Bullet b : bulletPool) {
 			if (!b.isActive) continue;
 			b.update();
@@ -52,6 +64,10 @@ public class GameLogic {
 		}
 	}
 
+	/**
+	 * 弾丸の衝突判定を行います。
+	 * 壁との反射、プレイヤーへの命中などを処理します。
+	 */
 	private void checkBulletCollision(Bullet b, Player me, int myId, PrintWriter out) {
 		boolean hitBoundary = false;
 
@@ -70,9 +86,7 @@ public class GameLogic {
 			for (Line2D.Double wall : obstacles) {
 				if (wall.ptSegDist(b.x, b.y) < b.size) {
 					if (canBounce(b)) {
-						// 壁の「面」と「端(角)」を区別して反射方向を決める
-
-						// 壁が水平(横向き)かどうか
+						// 壁の「面」と「端(角)」を区別して反射方向を決定
 						boolean isHorizontal = Math.abs(wall.y1 - wall.y2) < 1.0;
 
 						if (isHorizontal) {
@@ -80,11 +94,11 @@ public class GameLogic {
 							double minX = Math.min(wall.x1, wall.x2);
 							double maxX = Math.max(wall.x1, wall.x2);
 
-							// 弾のX座標が壁の範囲内なら「側面(上下)」に当たった -> Y反転 (-angle)
 							if (b.x >= minX && b.x <= maxX) {
+								// 壁の側面に当たった -> Y軸反転
 								b.angle = -b.angle;
 							} else {
-								// 範囲外なら「端(左右)」に当たった -> X反転 (PI - angle)
+								// 壁の端（角）に当たった -> X軸反転
 								b.angle = Math.PI - b.angle;
 							}
 						} else {
@@ -92,11 +106,11 @@ public class GameLogic {
 							double minY = Math.min(wall.y1, wall.y2);
 							double maxY = Math.max(wall.y1, wall.y2);
 
-							// 弾のY座標が壁の範囲内なら「側面(左右)」に当たった -> X反転 (PI - angle)
 							if (b.y >= minY && b.y <= maxY) {
+								// 壁の側面に当たった -> X軸反転
 								b.angle = Math.PI - b.angle;
 							} else {
-								// 範囲外なら「端(上下)」に当たった -> Y反転 (-angle)
+								// 壁の端（角）に当たった -> Y軸反転
 								b.angle = -b.angle;
 							}
 						}
@@ -111,15 +125,18 @@ public class GameLogic {
 		if (hitBoundary) b.deactivate();
 
 		// プレイヤーへのヒット判定
+		// 自分の弾は一定時間(BULLET_SAFE_TIME)当たらず、その後当たるようになる
 		if (b.isActive && (b.ownerId != myId || b.lifeTimer > BULLET_SAFE_TIME)) {
 			if (me.getBounds().contains(b.x, b.y)) {
 
 				int finalDamage = b.damage;
+				// ガード時のダメージ計算
 				if (me.isGuarding) {
 					finalDamage = (int)(finalDamage * GUARD_DAMAGE_CUT_RATE);
 					if (finalDamage < 1) finalDamage = 1;
 				}
 
+				// PassiveDelay (ダメージ分散) の処理
 				if (me.hasPassiveDelay) {
 					me.delayDamageBuffer += finalDamage;
 					finalDamage = 0;
@@ -129,6 +146,7 @@ public class GameLogic {
 				out.println("BULLET_HIT " + b.id);
 				b.deactivate();
 
+				// 弾の特殊効果適用
 				if ((b.typeFlag & FLAG_POISON) != 0) me.poisonTimer = PLAYER_POISON_DURATION;
 				if ((b.typeFlag & FLAG_COLD) != 0) me.coldTimer = PLAYER_COLD_DURATION;
 				if ((b.typeFlag & FLAG_HILL) != 0) out.println("HEAL " + b.ownerId + " " + (b.damage/2));
@@ -141,37 +159,50 @@ public class GameLogic {
 		}
 	}
 
+	/**
+	 * 弾が反射可能か判定します。
+	 */
 	private boolean canBounce(Bullet b) {
 		return (b.typeFlag & FLAG_BOUNCE) != 0 && b.bounceCount < b.maxBounces;
 	}
 
+	/**
+	 * 弾丸プールから未使用の弾を探して発射（アクティブ化）します。
+	 */
 	public void spawnBullet(int id, double x, double y, double angle, double speed, int dmg, int size, int flags, int ownerId, int extraBounces) {
 		for (Bullet b : bulletPool) {
 			if (!b.isActive) {
 				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
 
-				// 反射回数の設定ロジック修正
+				// 反射回数の設定
 				if(extraBounces > 0) {
 					b.typeFlag |= FLAG_BOUNCE;
 					b.maxBounces = extraBounces;
 				} else if ((flags & FLAG_BOUNCE) != 0) {
-					b.maxBounces = 2;
+					b.maxBounces = 2; // デフォルト反射数
 				}
 				break;
 			}
 		}
 	}
 
+	/**
+	 * ラウンド開始時に全プレイヤーの位置をリセットします。
+	 */
 	public void resetPositions(int myId) {
 		int minId = Integer.MAX_VALUE;
 		for(int id : players.keySet()) minId = Math.min(minId, id);
 		for (Player p : players.values()) {
+			// IDが小さい方が左側、大きい方が右側スタート
 			if (p.id == minId) { p.x = MAP_X + 50; p.y = MAP_Y + 50; }
 			else { p.x = MAP_X + MAP_WIDTH - 50; p.y = MAP_Y + MAP_HEIGHT - 50; }
 			p.resetForRound();
 		}
 	}
 
+	/**
+	 * 次のラウンドの準備。弾を消去し、敗者にはパワーアップを提示します。
+	 */
 	public void prepareNextRound() {
 		for(Bullet b : bulletPool) b.deactivate();
 		if (!isRoundWinner) {

@@ -3,16 +3,28 @@ package game;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * ラウンド敗北時に選択できるパワーアップ（強化カード）の基底クラス。
+ */
 public abstract class PowerUp {
 	public String name, desc, merit, demerit;
 	public PowerUp(String n, String d, String m, String dm) { name=n; desc=d; merit=m; demerit=dm; }
 	public abstract void apply(Player p);
 }
 
+/**
+ * パワーアップ一覧を生成・提供するファクトリークラス。
+ */
 class PowerUpFactory {
+	/**
+	 * ランダムに指定数のパワーアップを取得します。
+	 * @param count 取得する数
+	 * @return ランダムなPowerUpリスト
+	 */
 	public static ArrayList<PowerUp> getRandomPowerUps(int count) {
 		ArrayList<PowerUp> all = new ArrayList<>();
 
+		// 武器効果系
 		all.add(new PowerUp("Hill", "吸血能力", "攻撃時HP回復", "威力低下") { public void apply(Player p) { p.weapon.addEffect(new EffectHill()); }});
 		all.add(new PowerUp("Rising", "高速弾", "弾速+100%", "威力-20%") { public void apply(Player p) { p.weapon.addEffect(new EffectRising()); }});
 		all.add(new PowerUp("Impact", "高威力砲", "威力・弾速2倍", "間隔・リロード増") { public void apply(Player p) { p.weapon.addEffect(new EffectImpactShot()); }});
@@ -28,16 +40,18 @@ class PowerUpFactory {
 		all.add(new PowerUp("Ghost", "ゴースト", "短時間壁貫通", "リロード増") { public void apply(Player p) { p.weapon.addEffect(new EffectGhostShot()); }});
 		all.add(new PowerUp("Quick", "クイック", "リロード時間半減", "なし") { public void apply(Player p) { p.weapon.addEffect(new EffectQuickReload()); }});
 
+		// ステータス変更系
 		all.add(new PowerUp("Big Boy", "巨大化", "HP増・巨大化", "被弾判定増") { public void apply(Player p) { p.weapon.addEffect(new EffectBigBoy()); p.applyPowerUpStats(); }});
 		all.add(new PowerUp("Small Boy", "小型化", "回避・速度UP", "HP低下") { public void apply(Player p) { p.weapon.addEffect(new EffectSmallBoy()); p.applyPowerUpStats(); }});
 
+		// スキル取得系
 		all.add(new PowerUp("Tac. Reload", "戦術リロード", "防御時弾回復", "CD+2秒") { public void apply(Player p) { p.hasSkillTacticalReload = true; }});
 		all.add(new PowerUp("Exc. Defense", "専守防衛", "2秒後再発動 HP+", "CD+2秒") { public void apply(Player p) { p.hasSkillExclusiveDefense = true; p.applyPowerUpStats(); }});
 		all.add(new PowerUp("Invisible", "透明化", "防御後透明化", "CD+5秒") { public void apply(Player p) { p.hasSkillInvisible = true; }});
 		all.add(new PowerUp("Emergency", "緊急防御", "弾切れ時自動防御", "なし") { public void apply(Player p) { p.hasSkillEmergencyDefense = true; }});
 		all.add(new PowerUp("Teleport", "テレポート", "防御時瞬間移動", "CD+2秒") { public void apply(Player p) { p.hasSkillTeleport = true; }});
-		// Cold Pres. を削除
 
+		// パッシブ取得系
 		all.add(new PowerUp("Thirst", "渇望", "攻撃時加速", "なし") { public void apply(Player p) { p.hasPassiveThirst = true; }});
 		all.add(new PowerUp("Delay", "ディレイ", "ダメージ分散", "なし") { public void apply(Player p) { p.hasPassiveDelay = true; }});
 		all.add(new PowerUp("Confidence", "自信過剰", "攻撃時HP3倍", "終了時1/3") { public void apply(Player p) { p.hasPassiveConfidence = true; }});

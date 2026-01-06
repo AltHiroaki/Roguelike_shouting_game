@@ -3,11 +3,19 @@ package game;
 import java.awt.event.*;
 import javax.swing.SwingUtilities;
 
+/**
+ * キーボードおよびマウスの入力を管理するハンドラクラス。
+ * KeyListener, MouseListener, MouseMotionListenerを実装し、
+ * 現在の入力状態をパブリックフィールドとして提供します。
+ */
 public class InputHandler implements KeyListener, MouseListener, MouseMotionListener {
+	// --- キー入力状態 ---
 	public boolean keyW, keyS, keyA, keyD;
+
+	// --- マウス入力状態 ---
 	public int mouseX, mouseY;
-	public boolean isMousePressed = false;
-	public boolean isRightMousePressed = false;
+	public boolean isMousePressed = false;      // 左クリック
+	public boolean isRightMousePressed = false; // 右クリック
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -40,6 +48,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 		if (SwingUtilities.isRightMouseButton(e)) isRightMousePressed = false;
 	}
 
+	// 未使用のインターフェースメソッド
 	@Override public void keyTyped(KeyEvent e) {}
 	@Override public void mouseClicked(MouseEvent e) {}
 	@Override public void mouseEntered(MouseEvent e) {}
