@@ -56,11 +56,31 @@ public class GameLogic {
 		}
 		wasMousePressed = input.isMousePressed;
 
+		// "世界" スキル: ガード中のプレイヤーがいれば、その周囲の弾を消去
+		checkTheWorldSkill();
+
 		// 弾丸の更新と衝突判定
 		for (Bullet b : bulletPool) {
 			if (!b.isActive) continue;
 			b.update();
 			checkBulletCollision(b, me, myId, out);
+		}
+	}
+
+	private void checkTheWorldSkill() {
+		for (Player p : players.values()) {
+			if (p.isGuarding && p.hasSkillTheWorld) {
+				for (Bullet b : bulletPool) {
+					if (b.isActive) {
+						// 距離チェック
+						double dist = Math.sqrt(Math.pow(b.x - p.x, 2) + Math.pow(b.y - p.y, 2));
+						if (dist < SKILL_THE_WORLD_RANGE) {
+							// 弾を消す
+							b.deactivate();
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -130,6 +150,12 @@ public class GameLogic {
 			if (me.getBounds().contains(b.x, b.y)) {
 
 				int finalDamage = b.damage;
+
+				// ビルドアップ: 常時30%カット
+				if (me.hasPassiveBuildUp) {
+					finalDamage = (int)(finalDamage * POWERUP_BUILDUP_DEFENSE_RATE);
+				}
+
 				// ガード時のダメージ計算
 				if (me.isGuarding) {
 					finalDamage = (int)(finalDamage * GUARD_DAMAGE_CUT_RATE);
@@ -170,9 +196,14 @@ public class GameLogic {
 	 * 弾丸プールから未使用の弾を探して発射（アクティブ化）します。
 	 */
 	public void spawnBullet(int id, double x, double y, double angle, double speed, int dmg, int size, int flags, int ownerId, int extraBounces) {
+		// デフォルト寿命
+		spawnBullet(id, x, y, angle, speed, dmg, size, flags, ownerId, extraBounces, BULLET_DEFAULT_LIFE);
+	}
+
+	public void spawnBullet(int id, double x, double y, double angle, double speed, int dmg, int size, int flags, int ownerId, int extraBounces, int maxLife) {
 		for (Bullet b : bulletPool) {
 			if (!b.isActive) {
-				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
+				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId, maxLife);
 
 				// 反射回数の設定
 				if(extraBounces > 0) {

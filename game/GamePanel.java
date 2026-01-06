@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import static game.GameConstants.*;
 
 /**
@@ -18,8 +19,19 @@ public class GamePanel extends JPanel {
 
 	// --- UIコンポーネントの矩形情報（クリック判定用） ---
 	Rectangle startButtonRect = new Rectangle(300, 500, 200, 60);
+	Rectangle abilityInfoBtnRect = new Rectangle(550, 550, 150, 40); // 能力紹介ボタン
 	Rectangle[] mapButtons = new Rectangle[3];
 	Rectangle[] cardRects = new Rectangle[3];
+
+	// 能力紹介画面コンポーネント
+	ArrayList<PowerUp> allPowerUps;
+	Rectangle backButtonRect = new Rectangle(50, 50, 100, 40);
+	int selectedAbilityIndex = 0;
+
+	// スクロール用変数
+	int scrollIndex = 0;
+	final int MAX_VISIBLE_ITEMS = 15; // 一度に表示する最大数
+	Rectangle[] visibleListRects;     // 画面上に表示される枠（固定位置）
 
 	/**
 	 * コンストラクタ。
@@ -30,10 +42,20 @@ public class GamePanel extends JPanel {
 		this.logic = logic;
 		this.input = input;
 
+		// 全能力リストの取得
+		allPowerUps = PowerUpFactory.getAllPowerUps();
+
+		// 表示枠の初期化（画面上の固定位置）
+		visibleListRects = new Rectangle[MAX_VISIBLE_ITEMS];
+		for(int i=0; i<MAX_VISIBLE_ITEMS; i++) {
+			visibleListRects[i] = new Rectangle(50, 120 + i * 30, 250, 25);
+		}
+
 		setFocusable(true);
 		addKeyListener(input);
 		addMouseListener(input);
 		addMouseMotionListener(input);
+		addMouseWheelListener(input); // ホイールリスナー追加
 
 		// UIクリック処理用のリスナー
 		addMouseListener(new MouseAdapter() {
@@ -53,15 +75,41 @@ public class GamePanel extends JPanel {
 	 */
 	private void handleUIMouse(int mx, int my) {
 		if (client.currentState == ActionClient.GameState.TITLE) {
-			// タイトル画面: マップ選択またはスタートボタン
+			// タイトル画面: マップ選択
+			int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
 			for (int i = 0; i < 3; i++) {
 				if (mapButtons[i].contains(mx, my)) {
-					client.selectedMapType = i;
+					client.selectedMapType = types[i];
 					repaint();
 					return;
 				}
 			}
 			if (startButtonRect.contains(mx, my)) client.joinGame();
+
+			// 能力紹介ボタン
+			if (abilityInfoBtnRect.contains(mx, my)) {
+				client.currentState = ActionClient.GameState.ABILITY_INFO;
+				selectedAbilityIndex = -1; // 初期状態（詳細なし）
+				scrollIndex = 0;           // スクロールリセット
+				repaint();
+			}
+
+		} else if (client.currentState == ActionClient.GameState.ABILITY_INFO) {
+			// 能力紹介画面
+			if (backButtonRect.contains(mx, my)) {
+				client.currentState = ActionClient.GameState.TITLE;
+				repaint();
+			}
+			// リスト選択（表示されている枠をクリックしたか判定）
+			for(int i=0; i<MAX_VISIBLE_ITEMS; i++) {
+				if(visibleListRects[i].contains(mx, my)) {
+					int dataIndex = scrollIndex + i;
+					if (dataIndex < allPowerUps.size()) {
+						selectedAbilityIndex = dataIndex;
+						repaint();
+					}
+				}
+			}
 
 		} else if (client.currentState == ActionClient.GameState.ROUND_END_SELECT) {
 			// ラウンド終了時: パワーアップカードの選択
@@ -94,6 +142,7 @@ public class GamePanel extends JPanel {
 		// 状態に応じた描画メソッドの呼び出し
 		switch (client.currentState) {
 			case TITLE:            drawTitleScreen(g2d); break;
+			case ABILITY_INFO:     drawAbilityInfoScreen(g2d); break;
 			case WAITING:          drawWaitingScreen(g2d); break;
 			case PLAYING:          drawGameScreen(g2d); break;
 			case ROUND_END_SELECT: drawGameScreen(g2d); drawPowerUpSelection(g2d); break;
@@ -127,14 +176,17 @@ public class GamePanel extends JPanel {
 	 */
 	private void drawTitleScreen(Graphics2D g2d) {
 		g2d.setColor(Color.CYAN); g2d.setFont(new Font("Dialog", Font.BOLD, 50));
-		centerString(g2d, "バトルゲーム", 200);
+		centerString(g2d, "VECTOR ARENA", 200);
 
 		g2d.setFont(new Font("Dialog", Font.BOLD, 16));
-		String[] labels = {"要塞 (C)", "平原 (A)", "通路 (B)"};
+
+		// マップ選択ボタン: ABC順 (平原, 通路, 要塞)
+		String[] labels = {"平原 (A)", "通路 (B)", "要塞 (C)"};
+		int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
 
 		for (int i = 0; i < 3; i++) {
 			Rectangle btn = mapButtons[i];
-			if (client.selectedMapType == i) g2d.setColor(Color.YELLOW); else g2d.setColor(Color.LIGHT_GRAY);
+			if (client.selectedMapType == types[i]) g2d.setColor(Color.YELLOW); else g2d.setColor(Color.LIGHT_GRAY);
 			g2d.fill(btn);
 			g2d.setColor(Color.BLACK);
 			String lb = labels[i]; int sw = g2d.getFontMetrics().stringWidth(lb);
@@ -144,6 +196,114 @@ public class GamePanel extends JPanel {
 		g2d.setColor(Color.GREEN); g2d.fill(startButtonRect);
 		g2d.setColor(Color.BLACK); g2d.setFont(new Font("Dialog", Font.BOLD, 30));
 		g2d.drawString("スタート", startButtonRect.x + 40, startButtonRect.y + 40);
+
+		// 能力紹介ボタン
+		g2d.setColor(Color.ORANGE); g2d.fill(abilityInfoBtnRect);
+		g2d.setColor(Color.BLACK); g2d.setFont(new Font("Dialog", Font.BOLD, 14));
+		g2d.drawString("能力紹介", abilityInfoBtnRect.x + 45, abilityInfoBtnRect.y + 25);
+	}
+
+	/**
+	 * 能力紹介画面の描画（スクロール対応）
+	 */
+	private void drawAbilityInfoScreen(Graphics2D g2d) {
+		// スクロール処理
+		if (input.scrollAmount != 0) {
+			scrollIndex += input.scrollAmount;
+			input.scrollAmount = 0; // 消費
+		}
+		// 範囲制限
+		if (scrollIndex < 0) scrollIndex = 0;
+		int maxScroll = Math.max(0, allPowerUps.size() - MAX_VISIBLE_ITEMS);
+		if (scrollIndex > maxScroll) scrollIndex = maxScroll;
+
+		// 半透明背景
+		g2d.setColor(new Color(0, 0, 0, 200));
+		g2d.fillRect(20, 20, getWidth()-40, getHeight()-40);
+
+		// 戻るボタン
+		g2d.setColor(Color.GRAY); g2d.fill(backButtonRect);
+		g2d.setColor(Color.WHITE); g2d.setFont(new Font("Dialog", Font.BOLD, 16));
+		g2d.drawString("戻る", backButtonRect.x + 30, backButtonRect.y + 25);
+
+		// タイトル
+		g2d.setColor(Color.CYAN); g2d.setFont(new Font("Dialog", Font.BOLD, 30));
+		g2d.drawString("能力紹介", 300, 80);
+
+		// 左側：リスト（スクロール範囲内のみ描画）
+		g2d.setFont(new Font("Dialog", Font.PLAIN, 14));
+
+		for(int i=0; i<MAX_VISIBLE_ITEMS; i++) {
+			int dataIndex = scrollIndex + i;
+			if (dataIndex >= allPowerUps.size()) break;
+
+			Rectangle rect = visibleListRects[i];
+			if(dataIndex == selectedAbilityIndex) {
+				g2d.setColor(Color.YELLOW);
+				g2d.fill(rect);
+				g2d.setColor(Color.BLACK);
+			} else {
+				g2d.setColor(Color.WHITE);
+				g2d.draw(rect);
+			}
+			g2d.drawString(allPowerUps.get(dataIndex).name, rect.x + 5, rect.y + 18);
+		}
+
+		// スクロールバーの描画
+		if (allPowerUps.size() > MAX_VISIBLE_ITEMS) {
+			int barX = 310;
+			int barY = 120;
+			int barW = 10;
+			int barH = MAX_VISIBLE_ITEMS * 30; // リスト全体の高さ
+
+			// バー背景
+			g2d.setColor(Color.DARK_GRAY);
+			g2d.fillRect(barX, barY, barW, barH);
+
+			// ハンドル（つまみ）
+			double ratio = (double) MAX_VISIBLE_ITEMS / allPowerUps.size();
+			int handleH = (int)(barH * ratio);
+			if(handleH < 20) handleH = 20; // 最小サイズ
+
+			double posRatio = (double) scrollIndex / (allPowerUps.size() - MAX_VISIBLE_ITEMS);
+			int handleY = barY + (int)((barH - handleH) * posRatio);
+
+			g2d.setColor(Color.LIGHT_GRAY);
+			g2d.fillRect(barX, handleY, barW, handleH);
+		}
+
+		// 右側：詳細表示
+		int detailsX = 350; int detailsY = 120;
+
+		if (selectedAbilityIndex == -1) {
+			// デフォルトメッセージ
+			g2d.setColor(Color.WHITE);
+			g2d.setFont(new Font("Dialog", Font.PLAIN, 20));
+			drawStringMultiLine(g2d, "このVECTOR ARENAでは様々な能力が存在している。\nこれらを知ることで、勝率を高めよう！", detailsX, detailsY);
+		} else {
+			PowerUp p = allPowerUps.get(selectedAbilityIndex);
+
+			g2d.setColor(Color.WHITE);
+			g2d.setFont(new Font("Dialog", Font.BOLD, 40));
+			g2d.drawString(p.name, detailsX, detailsY);
+
+			g2d.setFont(new Font("Dialog", Font.BOLD, 20));
+			g2d.setColor(Color.CYAN);
+			g2d.drawString("・" + p.merit, detailsX, detailsY + 50);
+			g2d.setColor(Color.PINK);
+			g2d.drawString("・" + p.demerit, detailsX, detailsY + 80);
+
+			g2d.setColor(Color.WHITE);
+			g2d.setFont(new Font("Dialog", Font.PLAIN, 16));
+			drawStringMultiLine(g2d, p.flavorText, detailsX, detailsY + 130);
+		}
+	}
+
+	// 複数行テキスト描画ヘルパー
+	private void drawStringMultiLine(Graphics2D g, String text, int x, int y) {
+		for (String line : text.split("\n")) {
+			g.drawString(line, x, y += g.getFontMetrics().getHeight());
+		}
 	}
 
 	/**

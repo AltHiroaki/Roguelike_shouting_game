@@ -38,10 +38,17 @@ public class Player {
 	public boolean hasSkillEmergencyDefense = false;
 	public boolean hasSkillTeleport = false;
 
+	// 新規スキル
+	public boolean hasSkillSelfRegen = false; // 自己再生
+	public boolean hasSkillTheWorld = false;  // "世界"
+
 	// --- 所持パッシブ ---
 	public boolean hasPassiveThirst = false;
 	public boolean hasPassiveDelay = false;
 	public boolean hasPassiveConfidence = false;
+
+	// 新規パッシブ
+	public boolean hasPassiveBuildUp = false; // ビルドアップ
 
 	// --- スキル用内部タイマー・バッファ ---
 	public double delayDamageBuffer = 0;
@@ -112,6 +119,11 @@ public class Player {
 			maxHp = (int)(maxHp * SKILL_EXC_DEFENSE_HP_MULT);
 		}
 
+		// ビルドアップ (常時30%速度減)
+		if(hasPassiveBuildUp) {
+			speed *= POWERUP_BUILDUP_SPEED_MULT;
+		}
+
 		// HPが上限を超えていた場合の調整
 		if(hp > maxHp) hp = maxHp;
 	}
@@ -143,6 +155,16 @@ public class Player {
 			if (hasSkillTeleport) {
 				teleport(obstacles);
 				cooldownAdd += 120;
+			}
+			// 自己再生: HP回復 + CD2秒
+			if (hasSkillSelfRegen) {
+				int heal = (int)(maxHp * SKILL_REGEN_RATE);
+				hp = Math.min(hp + heal, maxHp);
+				cooldownAdd += SKILL_REGEN_CD_ADD;
+			}
+			// "世界": CD+5秒
+			if (hasSkillTheWorld) {
+				cooldownAdd += SKILL_THE_WORLD_CD_ADD;
 			}
 
 			guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
@@ -176,6 +198,14 @@ public class Player {
 		if (hasSkillTeleport) {
 			teleport(obstacles);
 			cooldownAdd += 120;
+		}
+		if (hasSkillSelfRegen) {
+			int heal = (int)(maxHp * SKILL_REGEN_RATE);
+			hp = Math.min(hp + heal, maxHp);
+			cooldownAdd += SKILL_REGEN_CD_ADD;
+		}
+		if (hasSkillTheWorld) {
+			cooldownAdd += SKILL_THE_WORLD_CD_ADD;
 		}
 
 		guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;

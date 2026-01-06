@@ -30,7 +30,8 @@ public class ActionClient extends JFrame {
 	private javax.swing.Timer gameTimer;
 
 	// --- ゲーム進行状態 ---
-	public enum GameState { TITLE, WAITING, PLAYING, ROUND_END_SELECT, ROUND_END_WAIT, COUNTDOWN, GAME_OVER }
+	// ABILITY_INFO を追加
+	public enum GameState { TITLE, ABILITY_INFO, WAITING, PLAYING, ROUND_END_SELECT, ROUND_END_WAIT, COUNTDOWN, GAME_OVER }
 	public GameState currentState = GameState.TITLE;
 
 	public int selectedMapType = MapGenerator.MAP_TYPE_C;
@@ -226,8 +227,9 @@ public class ActionClient extends JFrame {
 				int flags = Integer.parseInt(tokens[8]);
 				int ownerId = Integer.parseInt(tokens[9]);
 				int extraBounces = (tokens.length > 10) ? Integer.parseInt(tokens[10]) : 0;
+				int maxLife = (tokens.length > 11) ? Integer.parseInt(tokens[11]) : BULLET_DEFAULT_LIFE;
 
-				logic.spawnBullet(bId, x, y, angle, speed, damage, size, flags, ownerId, extraBounces);
+				logic.spawnBullet(bId, x, y, angle, speed, damage, size, flags, ownerId, extraBounces, maxLife);
 			} else if (cmd.equals("BULLET_HIT")) {
 				// 弾の命中通知。自分が撃った弾ならパッシブ効果を発動
 				int targetBulletId = Integer.parseInt(tokens[1]);

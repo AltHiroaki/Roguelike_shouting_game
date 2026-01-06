@@ -30,6 +30,9 @@ public class Bullet {
 	public int maxBounces = 0; // 反射回数上限
 	public int lifeTimer = 0;  // 生成されてからの経過フレーム数
 
+	// 寿命上限
+	public int maxLife = BULLET_DEFAULT_LIFE;
+
 	public Bullet() {}
 
 	/**
@@ -45,7 +48,7 @@ public class Bullet {
 	 * @param f 特殊効果フラグ
 	 * @param o 発射したプレイヤーのID
 	 */
-	public void activate(int id, double x, double y, double a, double s, int d, int sz, int f, int o) {
+	public void activate(int id, double x, double y, double a, double s, int d, int sz, int f, int o, int ml) {
 		this.id = id;
 		this.x = x;
 		this.y = y;
@@ -55,6 +58,7 @@ public class Bullet {
 		this.size = sz;
 		this.typeFlag = f;
 		this.ownerId = o;
+		this.maxLife = ml;
 		this.isActive = true;
 
 		// カウンタのリセット
@@ -78,6 +82,10 @@ public class Bullet {
 		x += Math.cos(angle) * speed;
 		y += Math.sin(angle) * speed;
 		lifeTimer++;
+		// 寿命が尽きたら消える
+		if (lifeTimer >= maxLife) {
+			deactivate();
+		}
 	}
 
 	/**

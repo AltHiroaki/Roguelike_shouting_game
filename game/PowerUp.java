@@ -8,7 +8,17 @@ import java.util.Collections;
  */
 public abstract class PowerUp {
 	public String name, desc, merit, demerit;
-	public PowerUp(String n, String d, String m, String dm) { name=n; desc=d; merit=m; demerit=dm; }
+	// 新規追加: 能力紹介画面用のフレーバーテキスト
+	public String flavorText;
+
+	public PowerUp(String n, String d, String m, String dm) {
+		this(n, d, m, dm, "未定");
+	}
+
+	public PowerUp(String n, String d, String m, String dm, String flavor) {
+		name=n; desc=d; merit=m; demerit=dm; flavorText=flavor;
+	}
+
 	public abstract void apply(Player p);
 }
 
@@ -22,6 +32,15 @@ class PowerUpFactory {
 	 * @return ランダムなPowerUpリスト
 	 */
 	public static ArrayList<PowerUp> getRandomPowerUps(int count) {
+		ArrayList<PowerUp> all = getAllPowerUps();
+		Collections.shuffle(all);
+		return new ArrayList<>(all.subList(0, Math.min(count, all.size())));
+	}
+
+	/**
+	 * 全能力のリストを取得（能力紹介画面用）
+	 */
+	public static ArrayList<PowerUp> getAllPowerUps() {
 		ArrayList<PowerUp> all = new ArrayList<>();
 
 		// 武器効果系
@@ -56,7 +75,27 @@ class PowerUpFactory {
 		all.add(new PowerUp("Delay", "ディレイ", "ダメージ分散", "なし") { public void apply(Player p) { p.hasPassiveDelay = true; }});
 		all.add(new PowerUp("Confidence", "自信過剰", "攻撃時HP3倍", "終了時1/3") { public void apply(Player p) { p.hasPassiveConfidence = true; }});
 
-		Collections.shuffle(all);
-		return new ArrayList<>(all.subList(0, Math.min(count, all.size())));
+
+		all.add(new PowerUp("Big Capacity", "大容量", "弾数+3 リロード短縮", "なし",
+				"未定") {
+			public void apply(Player p) { p.weapon.addEffect(new EffectBigCapacity()); }});
+
+		all.add(new PowerUp("Shotgun", "ショットガン", "20発発射 威力UP", "弾寿命1秒",
+				"未定") {
+			public void apply(Player p) { p.weapon.addEffect(new EffectShotgun()); }});
+
+		all.add(new PowerUp("Self Regen", "自己再生", "防御時30%回復", "CD+2秒",
+				"未定") {
+			public void apply(Player p) { p.hasSkillSelfRegen = true; }});
+
+		all.add(new PowerUp("Build Up", "ビルドアップ", "威力UP 被ダメ減", "速度低下",
+				"からだに ちからを こめて きんにくを ぶあつく することで すばやさを さげるが じぶんの こうげきと ぼうぎょを あげる。") {
+			public void apply(Player p) { p.hasPassiveBuildUp = true; p.weapon.addEffect(new EffectBuildUp()); p.applyPowerUpStats(); }});
+
+		all.add(new PowerUp("The World", "\"世界\"", "防御時周囲弾消去", "CD+5秒",
+				"きさま！\n見ているなッ！") {
+			public void apply(Player p) { p.hasSkillTheWorld = true; }});
+
+		return all;
 	}
 }

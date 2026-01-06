@@ -33,6 +33,9 @@ public class Weapon {
 	public boolean randomSpeed = false;
 	public int extraBounces = 0;
 
+	// 新規: 弾の最大寿命
+	public int bulletLifeTime = BULLET_DEFAULT_LIFE;
+
 	// 適用されているエフェクトリスト
 	ArrayList<WeaponEffect> effects = new ArrayList<>();
 
@@ -71,6 +74,7 @@ public class Weapon {
 		spreadAngle = 0.0;
 		randomSpeed = false;
 		extraBounces = 0;
+		bulletLifeTime = BULLET_DEFAULT_LIFE;
 
 		// 全エフェクト適用
 		for (WeaponEffect e : effects) e.applyStats(this);
@@ -167,7 +171,7 @@ public class Weapon {
 		for(WeaponEffect e : effects) flags |= e.getFlag();
 
 		out.println("SHOT " + bId + " " + x + " " + y + " " + angle +
-				" " + spd + " " + damage + " " + bulletSize + " " + flags + " " + myId + " " + extraBounces);
+				" " + spd + " " + damage + " " + bulletSize + " " + flags + " " + myId + " " + extraBounces + " " + bulletLifeTime);
 	}
 }
 
@@ -213,3 +217,22 @@ class EffectGhostShot extends WeaponEffect { public void applyStats(Weapon w) { 
 class EffectQuickReload extends WeaponEffect { public void applyStats(Weapon w) { w.reloadDuration *= POWERUP_QUICK_RELOAD_MULT; } }
 
 class EffectExtendedMag extends WeaponEffect { public void applyStats(Weapon w) { w.maxAmmo += EFFECT_EXTMAG_AMOUNT; } }
+
+class EffectBigCapacity extends WeaponEffect {
+	public void applyStats(Weapon w) {
+		w.maxAmmo += POWERUP_BIGCAP_AMMO_ADD;
+		w.reloadDuration *= POWERUP_BIGCAP_RELOAD_MULT;
+	}
+}
+class EffectShotgun extends WeaponEffect {
+	public void applyStats(Weapon w) {
+		w.pelletsPerShot += POWERUP_SHOTGUN_PELLETS_ADD;
+		w.damage *= POWERUP_SHOTGUN_DAMAGE_MULT;
+		w.bulletLifeTime = POWERUP_SHOTGUN_LIFE;
+	}
+}
+class EffectBuildUp extends WeaponEffect {
+	public void applyStats(Weapon w) {
+		w.damage *= POWERUP_BUILDUP_DAMAGE_MULT;
+	}
+}

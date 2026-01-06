@@ -47,7 +47,7 @@ public class GameConstants {
 	// ==========================================
 	public static final int FPS = 60;
 	public static final int MAX_WINS = 5;
-	public static final int MAX_BULLETS = 500;
+	public static final int MAX_BULLETS = 1000; // ショットガン用に最大数を増加
 	public static final int COUNTDOWN_FRAMES = 90;
 
 	// ==========================================
@@ -89,6 +89,8 @@ public class GameConstants {
 	public static final int GHOST_VALID_TIME = 20;
 	/** 弾生成直後の自分への当たり判定無効時間 */
 	public static final int BULLET_SAFE_TIME = 10;
+	/** 弾のデフォルト寿命 (フレーム数, 10秒) */
+	public static final int BULLET_DEFAULT_LIFE = 600;
 
 	// ==========================================
 	// マップ生成定数
@@ -196,4 +198,26 @@ public class GameConstants {
 	public static final double POWERUP_ROGUE_HP_MULT = 0.5;
 	public static final double POWERUP_ROGUE_SIZE_MULT = 0.5;
 	public static final double POWERUP_ROGUE_SPEED_MULT = 1.3;
+
+	// 大容量 (Big Capacity)
+	public static final int POWERUP_BIGCAP_AMMO_ADD = 3;
+	public static final double POWERUP_BIGCAP_RELOAD_MULT = 0.9;
+
+	// ショットガン (Shotgun)
+	public static final int POWERUP_SHOTGUN_PELLETS_ADD = 20;
+	public static final double POWERUP_SHOTGUN_DAMAGE_MULT = 1.1;
+	public static final int POWERUP_SHOTGUN_LIFE = 60; // 1秒
+
+	// 自己再生 (Self Regen)
+	public static final double SKILL_REGEN_RATE = 0.3; // 30%
+	public static final int SKILL_REGEN_CD_ADD = 120; // +2秒
+
+	// ビルドアップ (Build Up)
+	public static final double POWERUP_BUILDUP_DAMAGE_MULT = 1.3;
+	public static final double POWERUP_BUILDUP_DEFENSE_RATE = 0.7; // 30% cut
+	public static final double POWERUP_BUILDUP_SPEED_MULT = 0.7; // 30% down
+
+	// "世界" (The World)
+	public static final int SKILL_THE_WORLD_CD_ADD = 300; // +5秒
+	public static final double SKILL_THE_WORLD_RANGE = 200.0;
 }

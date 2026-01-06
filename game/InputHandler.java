@@ -5,10 +5,10 @@ import javax.swing.SwingUtilities;
 
 /**
  * キーボードおよびマウスの入力を管理するハンドラクラス。
- * KeyListener, MouseListener, MouseMotionListenerを実装し、
+ * KeyListener, MouseListener, MouseMotionListener, MouseWheelListenerを実装し、
  * 現在の入力状態をパブリックフィールドとして提供します。
  */
-public class InputHandler implements KeyListener, MouseListener, MouseMotionListener {
+public class InputHandler implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener {
 	// --- キー入力状態 ---
 	public boolean keyW, keyS, keyA, keyD;
 
@@ -16,6 +16,9 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	public int mouseX, mouseY;
 	public boolean isMousePressed = false;      // 左クリック
 	public boolean isRightMousePressed = false; // 右クリック
+
+	// --- ホイール入力状態 ---
+	public int scrollAmount = 0; // ホイールの回転量を蓄積
 
 	@Override
 	public void keyPressed(KeyEvent e) {
@@ -46,6 +49,10 @@ public class InputHandler implements KeyListener, MouseListener, MouseMotionList
 	@Override public void mouseReleased(MouseEvent e) {
 		if (SwingUtilities.isLeftMouseButton(e)) isMousePressed = false;
 		if (SwingUtilities.isRightMouseButton(e)) isRightMousePressed = false;
+	}
+
+	@Override public void mouseWheelMoved(MouseWheelEvent e) {
+		scrollAmount += e.getWheelRotation();
 	}
 
 	// 未使用のインターフェースメソッド
