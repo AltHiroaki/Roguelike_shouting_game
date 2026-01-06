@@ -33,7 +33,7 @@ public class GameConstants {
 
 	// === ゲームルール設定 ===
 	public static final int FPS = 60;
-	public static final int MAX_WINS = 4;
+	public static final int MAX_WINS = 5;
 	public static final int MAX_BULLETS = 500;
 	public static final int COUNTDOWN_FRAMES = 90;
 

@@ -33,14 +33,14 @@ public class GameLogic {
 		if (!players.containsKey(myId)) return;
 		Player me = players.get(myId);
 
-		// 修正: テレポート安全化のため obstacles を渡す
+		// テレポート安全化のため obstacles を渡す
 		if (input.isRightMousePressed) me.tryGuard(obstacles);
 
 		me.update(input.keyW, input.keyS, input.keyA, input.keyD,
 				input.mouseX, input.mouseY, obstacles, out);
 
 		if (input.isMousePressed && !wasMousePressed) {
-			// 修正: 緊急防御スキル判定のため obstacles を渡す
+			// 緊急防御スキル判定のため obstacles を渡す
 			me.weapon.tryShoot(out, myId, obstacles);
 		}
 		wasMousePressed = input.isMousePressed;
