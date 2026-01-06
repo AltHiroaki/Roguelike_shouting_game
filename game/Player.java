@@ -5,6 +5,7 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.io.PrintWriter;
+
 import static game.GameConstants.*;
 
 /**
@@ -59,10 +60,11 @@ public class Player {
 
 	/**
 	 * コンストラクタ
+	 *
 	 * @param id プレイヤー ID
-	 * @param x 初期 X 座標
-	 * @param y 初期 Y 座標
-	 * @param c プレイヤーカラー
+	 * @param x  初期 X 座標
+	 * @param y  初期 Y 座標
+	 * @param c  プレイヤーカラー
 	 */
 	public Player(int id, double x, double y, Color c) {
 		this.id = id;
@@ -99,38 +101,39 @@ public class Player {
 		size = PLAYER_SIZE;
 		speed = PLAYER_SPEED;
 
-		for(WeaponEffect e : weapon.effects) {
-			if(e instanceof EffectBigBoy) {
-				maxHp = (int)(maxHp * POWERUP_TANK_HP_MULT);
+		for (WeaponEffect e : weapon.effects) {
+			if (e instanceof EffectBigBoy) {
+				maxHp = (int) (maxHp * POWERUP_TANK_HP_MULT);
 				size *= POWERUP_TANK_SIZE_MULT;
 			}
-			if(e instanceof EffectSmallBoy) {
-				maxHp = (int)(maxHp * POWERUP_ROGUE_HP_MULT);
+			if (e instanceof EffectSmallBoy) {
+				maxHp = (int) (maxHp * POWERUP_ROGUE_HP_MULT);
 				size *= POWERUP_ROGUE_SIZE_MULT;
 				speed *= POWERUP_ROGUE_SPEED_MULT;
 			}
-			if(e instanceof EffectIdaten) {
-				maxHp = (int)(maxHp * POWERUP_IDATEN_HP_MULT);
+			if (e instanceof EffectIdaten) {
+				maxHp = (int) (maxHp * POWERUP_IDATEN_HP_MULT);
 				speed *= POWERUP_IDATEN_SPEED_MULT;
 			}
 		}
 
-		if(hasSkillExclusiveDefense) {
-			maxHp = (int)(maxHp * SKILL_EXC_DEFENSE_HP_MULT);
+		if (hasSkillExclusiveDefense) {
+			maxHp = (int) (maxHp * SKILL_EXC_DEFENSE_HP_MULT);
 		}
 
 		// ビルドアップ (常時30%速度減)
-		if(hasPassiveBuildUp) {
+		if (hasPassiveBuildUp) {
 			speed *= POWERUP_BUILDUP_SPEED_MULT;
 		}
 
 		// HPが上限を超えていた場合の調整
-		if(hp > maxHp) hp = maxHp;
+		if (hp > maxHp) hp = maxHp;
 	}
 
 	/**
 	 * プレイヤーのガードを試みます。
 	 * クールダウン中でなければガード状態に移行し、関連スキルの発動処理も行います。
+	 *
 	 * @param obstacles テレポートスキル時の壁判定用
 	 */
 	public void tryGuard(ArrayList<Line2D.Double> obstacles) {
@@ -158,7 +161,7 @@ public class Player {
 			}
 			// 自己再生: HP回復 + CD2秒
 			if (hasSkillSelfRegen) {
-				int heal = (int)(maxHp * SKILL_REGEN_RATE);
+				int heal = (int) (maxHp * SKILL_REGEN_RATE);
 				hp = Math.min(hp + heal, maxHp);
 				cooldownAdd += SKILL_REGEN_CD_ADD;
 			}
@@ -173,6 +176,7 @@ public class Player {
 
 	/**
 	 * クールダウンを無視して強制的にガードを発動します（緊急防御スキル用）。
+	 *
 	 * @param obstacles テレポートスキル時の壁判定用
 	 */
 	public void forceGuard(ArrayList<Line2D.Double> obstacles) {
@@ -200,7 +204,7 @@ public class Player {
 			cooldownAdd += 120;
 		}
 		if (hasSkillSelfRegen) {
-			int heal = (int)(maxHp * SKILL_REGEN_RATE);
+			int heal = (int) (maxHp * SKILL_REGEN_RATE);
 			hp = Math.min(hp + heal, maxHp);
 			cooldownAdd += SKILL_REGEN_CD_ADD;
 		}
@@ -213,6 +217,7 @@ public class Player {
 
 	/**
 	 * 進行方向に向かって一定距離テレポートします。
+	 *
 	 * @param obstacles 壁情報のリスト
 	 */
 	private void teleport(ArrayList<Line2D.Double> obstacles) {
@@ -238,14 +243,15 @@ public class Player {
 	/**
 	 * プレイヤーの毎フレームの更新処理。
 	 * 移動、状態異常の処理、サーバーへの位置情報送信などを行います。
-	 * @param keyW Wキー入力状態
-	 * @param keyS Sキー入力状態
-	 * @param keyA Aキー入力状態
-	 * @param keyD Dキー入力状態
-	 * @param mx マウスX座標
-	 * @param my マウスY座標
+	 *
+	 * @param keyW      Wキー入力状態
+	 * @param keyS      Sキー入力状態
+	 * @param keyA      Aキー入力状態
+	 * @param keyD      Dキー入力状態
+	 * @param mx        マウスX座標
+	 * @param my        マウスY座標
 	 * @param obstacles 壁情報
-	 * @param out サーバー出力用Writer
+	 * @param out       サーバー出力用Writer
 	 */
 	public void update(boolean keyW, boolean keyS, boolean keyA, boolean keyD, int mx, int my, ArrayList<Line2D.Double> obstacles, PrintWriter out) {
 		// ガード状態の更新
@@ -269,26 +275,26 @@ public class Player {
 
 		// ディレイパッシブ（DoTダメージ）の処理
 		if (hasPassiveDelay && delayDamageBuffer > 0) {
-			if(hp > 0 && GameLogic.frameCount % 20 == 0) {
-				int bleed = (int)(delayDamageBuffer * 0.1) + 1;
+			if (hp > 0 && GameLogic.frameCount % 20 == 0) {
+				int bleed = (int) (delayDamageBuffer * 0.1) + 1;
 				hp -= bleed;
 				delayDamageBuffer -= bleed;
-				if(delayDamageBuffer < 0) delayDamageBuffer = 0;
+				if (delayDamageBuffer < 0) delayDamageBuffer = 0;
 			}
 		}
 
 		// 状態異常処理
 		if (poisonTimer > 0) {
-			if(GameLogic.frameCount % 30 == 0) hp--;
+			if (GameLogic.frameCount % 30 == 0) hp--;
 			poisonTimer--;
 		}
 		if (coldTimer > 0) coldTimer--;
 		if (thirstTimer > 0) thirstTimer--;
 		if (confidenceTimer > 0) {
 			confidenceTimer--;
-			if(confidenceTimer == 0) {
+			if (confidenceTimer == 0) {
 				// 自信過剰の効果終了時、HPを1/3にする
-				hp = (int)Math.ceil(hp / 3.0);
+				hp = (int) Math.ceil(hp / 3.0);
 			}
 		}
 
@@ -310,19 +316,28 @@ public class Player {
 
 		// 向きの計算
 		angle = Math.atan2(my - y, mx - x);
-
-		// サーバーへ状態を送信
-		out.println("MOVE " + (int)x + " " + (int)y + " " + angle + " " + hp
-				+ " " + weapon.isReloading + " " + weapon.reloadTimer
-				+ " " + isGuarding + " " + guardCooldownTimer + " " + (invisibleTimer > 0) + " " + id);
-
+		// 1. フラグ圧縮 (ビット演算でまとめる)
+		int flags = 0;
+		if (weapon.isReloading) flags |= 1;       // 1ビット目を立てる (001)
+		if (isGuarding) flags |= 2;       // 2ビット目を立てる (010)
+		if (invisibleTimer > 0) flags |= 4;       // 3ビット目を立てる (100)
+		// 2. 角度の桁数制限 (String.formatで小数点2桁に)
+		String shortAngle = String.format("%.2f", angle);
+		// 3. 短縮版メッセージを送信
+		// 構成: MOVE x y angle hp reloadTimer guardTimer flags id
+		out.println("MOVE " + (int) x + " " + (int) y + " " + shortAngle + " " + hp
+				+ " " + weapon.reloadTimer
+				+ " " + guardCooldownTimer
+				+ " " + flags
+				+ " " + id);
 		weapon.update(out, id, obstacles);
 	}
 
 	/**
 	 * 指定した座標が壁やマップ境界と干渉するか判定します。
-	 * @param tx チェックするX座標
-	 * @param ty チェックするY座標
+	 *
+	 * @param tx    チェックするX座標
+	 * @param ty    チェックするY座標
 	 * @param walls 壁情報のリスト
 	 * @return 干渉する場合は true
 	 */
@@ -344,7 +359,7 @@ public class Player {
 	 * プレイヤーの矩形（当たり判定用）を取得します。
 	 */
 	public Rectangle getBounds() {
-		return new Rectangle((int)x - size, (int)y - size, size * 2, size * 2);
+		return new Rectangle((int) x - size, (int) y - size, size * 2, size * 2);
 	}
 
 	/**
@@ -359,19 +374,22 @@ public class Player {
 		g2d.translate(x, y);
 
 		// HPバーの描画
-		g2d.setColor(Color.RED); g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, 40, UI_BAR_HEIGHT);
+		g2d.setColor(Color.RED);
+		g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, 40, UI_BAR_HEIGHT);
 		g2d.setColor(Color.GREEN);
-		int barWidth = (int)(40 * (hp / (double)maxHp));
-		if (barWidth > 40) barWidth = 40; if (barWidth < 0) barWidth = 0;
+		int barWidth = (int) (40 * (hp / (double) maxHp));
+		if (barWidth > 40) barWidth = 40;
+		if (barWidth < 0) barWidth = 0;
 		g2d.fillRect(-20, UI_BAR_HP_Y_OFFSET, barWidth, UI_BAR_HEIGHT);
 
 		// リロードバーの描画
 		if (weapon.isReloading) {
-			g2d.setColor(Color.GRAY); g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, 40, UI_BAR_HEIGHT);
+			g2d.setColor(Color.GRAY);
+			g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(Color.YELLOW);
-			double progress = (double)weapon.reloadTimer / weapon.reloadDuration;
+			double progress = (double) weapon.reloadTimer / weapon.reloadDuration;
 			if (progress > 1.0) progress = 1.0;
-			g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, (int)(40 * progress), UI_BAR_HEIGHT);
+			g2d.fillRect(-20, UI_BAR_RELOAD_Y_OFFSET, (int) (40 * progress), UI_BAR_HEIGHT);
 		}
 
 		// ガードクールダウンバーの描画
@@ -379,9 +397,9 @@ public class Player {
 			g2d.setColor(Color.GRAY);
 			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, 40, UI_BAR_HEIGHT);
 			g2d.setColor(COLOR_GUARD_COOLDOWN);
-			double progress = 1.0 - ((double)guardCooldownTimer / GUARD_COOLDOWN);
+			double progress = 1.0 - ((double) guardCooldownTimer / GUARD_COOLDOWN);
 			if (progress < 0) progress = 0;
-			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, (int)(40 * progress), UI_BAR_HEIGHT);
+			g2d.fillRect(-20, UI_BAR_GUARD_Y_OFFSET, (int) (40 * progress), UI_BAR_HEIGHT);
 		}
 
 		// ガードシールドの描画
@@ -395,7 +413,7 @@ public class Player {
 		// キャラクター画像の描画
 		BufferedImage img = (id == myId) ? imgMe : imgEnemy;
 		if (img != null) {
-			if(invisibleTimer > 0) {
+			if (invisibleTimer > 0) {
 				// 自分の透明化中は半透明で表示
 				Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 				g2d.setComposite(c);

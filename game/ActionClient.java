@@ -199,16 +199,31 @@ public class ActionClient extends JFrame {
 					setGameOver("完全勝利！(相手が退出しました)");
 				}
 			} else if (cmd.equals("MOVE")) {
-				// 他プレイヤーの移動情報反映
-				int id = Integer.parseInt(tokens[10]);
+				// トークン構成: [0]MOVE [1]x [2]y [3]angle [4]hp [5]reloadTimer [6]guardTimer [7]flags [8]id
+
+				int id = Integer.parseInt(tokens[8]);
+
 				if (id != myId) {
 					Player p = logic.players.computeIfAbsent(id, k -> new Player(id, 0, 0, COLOR_PLAYER_ENEMY));
-					p.x = Double.parseDouble(tokens[1]); p.y = Double.parseDouble(tokens[2]);
-					p.angle = Double.parseDouble(tokens[3]); p.hp = Integer.parseInt(tokens[4]);
-					p.weapon.isReloading = Boolean.parseBoolean(tokens[5]); p.weapon.reloadTimer = Integer.parseInt(tokens[6]);
-					p.isGuarding = Boolean.parseBoolean(tokens[7]);
-					p.guardCooldownTimer = Integer.parseInt(tokens[8]);
-					p.invisibleTimer = Boolean.parseBoolean(tokens[9]) ? 10 : 0;
+
+					// 座標・角度・HP
+					p.x = Double.parseDouble(tokens[1]);
+					p.y = Double.parseDouble(tokens[2]);
+					p.angle = Double.parseDouble(tokens[3]);
+					p.hp = Integer.parseInt(tokens[4]);
+
+					// タイマー類
+					p.weapon.reloadTimer = Integer.parseInt(tokens[5]);
+					p.guardCooldownTimer = Integer.parseInt(tokens[6]);
+
+					// フラグの展開 (ビット演算で復元)
+					int flags = Integer.parseInt(tokens[7]);
+					p.weapon.isReloading = (flags & 1) != 0; // 1ビット目をチェック
+					p.isGuarding         = (flags & 2) != 0; // 2ビット目をチェック
+					boolean isInvisible  = (flags & 4) != 0; // 3ビット目をチェック
+
+					// 透明化タイマーの簡易設定 (表示用なので0か正の値があればOK)
+					p.invisibleTimer = isInvisible ? 10 : 0;
 				}
 			} else if (cmd.equals("STATUS")) {
 				// 他プレイヤーのステータス更新（最大HP、サイズ、リロード時間）
