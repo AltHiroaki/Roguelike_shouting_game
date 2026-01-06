@@ -67,7 +67,7 @@ public class Weapon {
 		if (maxAmmo < 1) maxAmmo = 1;
 	}
 
-	// 修正: obstaclesを受け取るように変更 (バースト射撃用)
+	// obstaclesを受け取るように変更 (バースト射撃用)
 	public void update(PrintWriter out, int myId, ArrayList<Line2D.Double> obstacles) {
 		if (fireTimer > 0) fireTimer--;
 
@@ -90,7 +90,7 @@ public class Weapon {
 		}
 	}
 
-	//修正: obstaclesを受け取るように変更
+	// obstacles を受け取るように変更
 	public void tryShoot(PrintWriter out, int myId, ArrayList<Line2D.Double> obstacles) {
 		if (fireTimer > 0) return;
 
@@ -134,7 +134,7 @@ public class Weapon {
 		}
 	}
 
-	// 修正: obstacles引数追加
+	// obstacles 引数追加
 	public void startReload(ArrayList<Line2D.Double> obstacles) {
 		isReloading = true;
 		reloadTimer = 0;

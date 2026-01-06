@@ -150,7 +150,7 @@ public class GameLogic {
 			if (!b.isActive) {
 				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
 
-				// // 反射回数の設定ロジック修正
+				// 反射回数の設定ロジック修正
 				if(extraBounces > 0) {
 					b.typeFlag |= FLAG_BOUNCE;
 					b.maxBounces = extraBounces;

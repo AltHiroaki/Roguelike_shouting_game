@@ -77,7 +77,7 @@ public class Player {
 		if(hp > maxHp) hp = maxHp;
 	}
 
-	// 修正: obstaclesを受け取るように変更
+	// obstacles を受け取るように変更
 	public void tryGuard(ArrayList<Line2D.Double> obstacles) {
 		if (guardCooldownTimer <= 0 && !isGuarding) {
 			isGuarding = true;
@@ -97,7 +97,7 @@ public class Player {
 				cooldownAdd += 300;
 			}
 			if (hasSkillTeleport) {
-				teleport(obstacles); // 修正: obstaclesを渡す
+				teleport(obstacles); // obstaclesを渡す
 				cooldownAdd += 120;
 			}
 
@@ -105,7 +105,7 @@ public class Player {
 		}
 	}
 
-	// 修正: obstaclesを受け取るように変更
+	// obstacles を受け取るように変更
 	public void forceGuard(ArrayList<Line2D.Double> obstacles) {
 		if (isGuarding) return;
 
@@ -126,7 +126,7 @@ public class Player {
 			cooldownAdd += 300;
 		}
 		if (hasSkillTeleport) {
-			teleport(obstacles); // 修正: obstaclesを渡す
+			teleport(obstacles); // obstaclesを渡す
 			cooldownAdd += 120;
 		}
 

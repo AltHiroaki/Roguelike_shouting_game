@@ -25,7 +25,7 @@ class PowerUpFactory {
 		all.add(new PowerUp("Cold", "冷却弾", "相手速度-50%", "リロード増") { public void apply(Player p) { p.weapon.addEffect(new EffectColdShot()); }});
 		all.add(new PowerUp("3 in 1", "三位一体", "威力・速度+100%", "弾数-2 リロード増") { public void apply(Player p) { p.weapon.addEffect(new Effect3in1()); }});
 		all.add(new PowerUp("Poison", "毒", "DOTダメージ", "リロード増") { public void apply(Player p) { p.weapon.addEffect(new EffectPoisonNew()); }});
-		all.add(new PowerUp("Ghost", "ゴースト", "壁貫通", "リロード増") { public void apply(Player p) { p.weapon.addEffect(new EffectGhostShot()); }});
+		all.add(new PowerUp("Ghost", "ゴースト", "短時間壁貫通", "リロード増") { public void apply(Player p) { p.weapon.addEffect(new EffectGhostShot()); }});
 		all.add(new PowerUp("Quick", "クイック", "リロード時間半減", "なし") { public void apply(Player p) { p.weapon.addEffect(new EffectQuickReload()); }});
 
 		all.add(new PowerUp("Big Boy", "巨大化", "HP増・巨大化", "被弾判定増") { public void apply(Player p) { p.weapon.addEffect(new EffectBigBoy()); p.applyPowerUpStats(); }});
