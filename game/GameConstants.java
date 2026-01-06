@@ -97,7 +97,7 @@ public class GameConstants {
 	public static final Color COLOR_GUARD_SHIELD = new Color(0, 255, 255, 100);
 	public static final Color COLOR_GUARD_COOLDOWN = new Color(100, 100, 255);
 
-	// === // 修正: パワーアップ・スキル用定数 (マジックナンバー解消) ===
+	//パワーアップ・スキル用定数
 
 	// EffectHill
 	public static final double POWERUP_HILL_DAMAGE_MULT = 0.6;

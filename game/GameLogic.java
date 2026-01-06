@@ -64,13 +64,13 @@ public class GameLogic {
 		}
 
 		// 壁(障害物)との判定
-		// 修正: ゴースト弾でも一定時間経過したら壁判定を行う
+		// ゴースト弾でも一定時間経過したら壁判定を行う
 		if (!hitBoundary && ((b.typeFlag & FLAG_GHOST) == 0 || b.lifeTimer > GHOST_VALID_TIME)) {
 
 			for (Line2D.Double wall : obstacles) {
 				if (wall.ptSegDist(b.x, b.y) < b.size) {
 					if (canBounce(b)) {
-						// 修正: 壁の「面」と「端(角)」を区別して反射方向を決める
+						// 壁の「面」と「端(角)」を区別して反射方向を決める
 
 						// 壁が水平(横向き)かどうか
 						boolean isHorizontal = Math.abs(wall.y1 - wall.y2) < 1.0;
@@ -100,7 +100,6 @@ public class GameLogic {
 								b.angle = -b.angle;
 							}
 						}
-						// 修正終了
 
 						b.bounceCount++;
 					} else hitBoundary = true;
@@ -151,7 +150,7 @@ public class GameLogic {
 			if (!b.isActive) {
 				b.activate(id, x, y, angle, speed, dmg, size, flags, ownerId);
 
-				// // 修正: 反射回数の設定ロジック修正
+				// // 反射回数の設定ロジック修正
 				if(extraBounces > 0) {
 					b.typeFlag |= FLAG_BOUNCE;
 					b.maxBounces = extraBounces;

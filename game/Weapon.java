@@ -155,8 +155,6 @@ abstract class WeaponEffect {
 	public int getFlag() { return FLAG_NONE; }
 }
 
-// === ★修正: 定数化対応 ===
-
 class EffectHill extends WeaponEffect { public void applyStats(Weapon w) { w.damage *= POWERUP_HILL_DAMAGE_MULT; } public int getFlag() { return FLAG_HILL; } }
 
 class EffectRising extends WeaponEffect { public void applyStats(Weapon w) { w.bulletSpeed *= POWERUP_RISING_SPEED_MULT; w.damage *= POWERUP_RISING_DAMAGE_MULT; } }

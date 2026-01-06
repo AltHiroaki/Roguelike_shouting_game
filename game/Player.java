@@ -133,7 +133,7 @@ public class Player {
 		guardCooldownTimer = GUARD_COOLDOWN + cooldownAdd;
 	}
 
-	// 修正: 安全なテレポートの実装
+	// 安全なテレポートの実装
 	private void teleport(ArrayList<Line2D.Double> obstacles) {
 		double dist = SKILL_TELEPORT_DISTANCE;
 		double tx = x + Math.cos(angle) * dist;
@@ -152,7 +152,7 @@ public class Player {
 			y = ty;
 		} else {
 			// 壁の中になる場合はテレポート失敗（何もしない、または視覚効果だけ出す等の処理）
-			// ここでは「移動しない」としてスタックを防ぎます。
+			// ここでは「移動しない」としてスタックを防ぐ。
 		}
 	}
 
@@ -214,11 +214,11 @@ public class Player {
 				+ " " + weapon.isReloading + " " + weapon.reloadTimer
 				+ " " + isGuarding + " " + guardCooldownTimer + " " + (invisibleTimer > 0) + " " + id);
 
-		// 修正: updateからもobstaclesを渡す
+		// update からもobstaclesを渡す
 		weapon.update(out, id, obstacles);
 	}
 
-	// 修正: バッファ(MAP_COLLISION_BUFFER)を追加して、壁ギリギリで止まるようにする
+	// バッファ(MAP_COLLISION_BUFFER)を追加して、壁ギリギリで止まるようにする
 	private boolean checkWall(double tx, double ty, ArrayList<Line2D.Double> walls) {
 		// 判定サイズを少し大きくする
 		double checkSize = size + MAP_COLLISION_BUFFER;
