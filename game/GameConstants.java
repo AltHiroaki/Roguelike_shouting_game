@@ -25,6 +25,9 @@ public class GameConstants {
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
 
+	/** ゲーム全体で使用するフォント名 (Monospaced, SansSerif, Dialog, DialogInput 等) */
+	public static final String FONT_NAME = "Monospaced";
+
 	/** 衝突判定のバッファ (壁にめり込まないようにするための余白距離) */
 	public static final double MAP_COLLISION_BUFFER = 2.0;
 

@@ -89,7 +89,7 @@ class PowerUpFactory {
 			public void apply(Player p) { p.hasSkillSelfRegen = true; }});
 
 		all.add(new PowerUp("Build Up", "ビルドアップ", "威力UP 被ダメ減", "速度低下",
-				"からだに ちからを こめて きんにくを ぶあつく することで すばやさを さげるが じぶんの こうげきと ぼうぎょを あげる。") {
+				"からだに ちからを こめて \nきんにくを ぶあつく することで すばやさを さげるが \nじぶんの こうげきと ぼうぎょを あげる。") {
 			public void apply(Player p) { p.hasPassiveBuildUp = true; p.weapon.addEffect(new EffectBuildUp()); p.applyPowerUpStats(); }});
 
 		all.add(new PowerUp("The World", "\"世界\"", "防御時周囲弾消去", "CD+5秒",

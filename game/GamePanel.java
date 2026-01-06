@@ -175,10 +175,10 @@ public class GamePanel extends JPanel {
 	 * タイトル画面の描画。マップ選択ボタンなどを表示します。
 	 */
 	private void drawTitleScreen(Graphics2D g2d) {
-		g2d.setColor(Color.CYAN); g2d.setFont(new Font("Dialog", Font.BOLD, 50));
+		g2d.setColor(Color.CYAN); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 50));
 		centerString(g2d, "VECTOR ARENA", 200);
 
-		g2d.setFont(new Font("Dialog", Font.BOLD, 16));
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
 
 		// マップ選択ボタン: ABC順 (平原, 通路, 要塞)
 		String[] labels = {"平原 (A)", "通路 (B)", "要塞 (C)"};
@@ -194,12 +194,12 @@ public class GamePanel extends JPanel {
 		}
 
 		g2d.setColor(Color.GREEN); g2d.fill(startButtonRect);
-		g2d.setColor(Color.BLACK); g2d.setFont(new Font("Dialog", Font.BOLD, 30));
+		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
 		g2d.drawString("スタート", startButtonRect.x + 40, startButtonRect.y + 40);
 
 		// 能力紹介ボタン
 		g2d.setColor(Color.ORANGE); g2d.fill(abilityInfoBtnRect);
-		g2d.setColor(Color.BLACK); g2d.setFont(new Font("Dialog", Font.BOLD, 14));
+		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
 		g2d.drawString("能力紹介", abilityInfoBtnRect.x + 45, abilityInfoBtnRect.y + 25);
 	}
 
@@ -223,15 +223,15 @@ public class GamePanel extends JPanel {
 
 		// 戻るボタン
 		g2d.setColor(Color.GRAY); g2d.fill(backButtonRect);
-		g2d.setColor(Color.WHITE); g2d.setFont(new Font("Dialog", Font.BOLD, 16));
+		g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
 		g2d.drawString("戻る", backButtonRect.x + 30, backButtonRect.y + 25);
 
 		// タイトル
-		g2d.setColor(Color.CYAN); g2d.setFont(new Font("Dialog", Font.BOLD, 30));
+		g2d.setColor(Color.CYAN); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
 		g2d.drawString("能力紹介", 300, 80);
 
 		// 左側：リスト（スクロール範囲内のみ描画）
-		g2d.setFont(new Font("Dialog", Font.PLAIN, 14));
+		g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
 
 		for(int i=0; i<MAX_VISIBLE_ITEMS; i++) {
 			int dataIndex = scrollIndex + i;
@@ -278,23 +278,23 @@ public class GamePanel extends JPanel {
 		if (selectedAbilityIndex == -1) {
 			// デフォルトメッセージ
 			g2d.setColor(Color.WHITE);
-			g2d.setFont(new Font("Dialog", Font.PLAIN, 20));
+			g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 20));
 			drawStringMultiLine(g2d, "このVECTOR ARENAでは様々な能力が存在している。\nこれらを知ることで、勝率を高めよう！", detailsX, detailsY);
 		} else {
 			PowerUp p = allPowerUps.get(selectedAbilityIndex);
 
 			g2d.setColor(Color.WHITE);
-			g2d.setFont(new Font("Dialog", Font.BOLD, 40));
+			g2d.setFont(new Font(FONT_NAME, Font.BOLD, 40));
 			g2d.drawString(p.name, detailsX, detailsY);
 
-			g2d.setFont(new Font("Dialog", Font.BOLD, 20));
+			g2d.setFont(new Font(FONT_NAME, Font.BOLD, 20));
 			g2d.setColor(Color.CYAN);
 			g2d.drawString("・" + p.merit, detailsX, detailsY + 50);
 			g2d.setColor(Color.PINK);
 			g2d.drawString("・" + p.demerit, detailsX, detailsY + 80);
 
 			g2d.setColor(Color.WHITE);
-			g2d.setFont(new Font("Dialog", Font.PLAIN, 16));
+			g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 16));
 			drawStringMultiLine(g2d, p.flavorText, detailsX, detailsY + 130);
 		}
 	}
@@ -310,9 +310,9 @@ public class GamePanel extends JPanel {
 	 * 対戦相手待機画面の描画。
 	 */
 	private void drawWaitingScreen(Graphics2D g2d) {
-		g2d.setColor(COLOR_TEXT); g2d.setFont(new Font("Dialog", Font.BOLD, 30));
+		g2d.setColor(COLOR_TEXT); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
 		centerString(g2d, "対戦相手を待っています...", 300);
-		g2d.setFont(new Font("Dialog", Font.PLAIN, 20));
+		g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 20));
 		centerString(g2d, "現在の参加人数: " + logic.joinedPlayers.size(), 350);
 	}
 
@@ -322,7 +322,7 @@ public class GamePanel extends JPanel {
 	 */
 	private void drawGameScreen(Graphics2D g2d) {
 		// スコア表示
-		g2d.setFont(new Font("Dialog", Font.BOLD, 30));
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
 		g2d.setColor(COLOR_PLAYER_ME); g2d.drawString("自分: " + getStars(logic.myWinCount), 50, 40);
 		g2d.setColor(COLOR_PLAYER_ENEMY);  g2d.drawString("相手: " + getStars(logic.enemyWinCount), 500, 40);
 
@@ -343,7 +343,7 @@ public class GamePanel extends JPanel {
 		// 自分の残弾数表示
 		if (logic.players.containsKey(client.myId)) {
 			Player me = logic.players.get(client.myId);
-			g2d.setFont(new Font("Monospaced", Font.BOLD, 18));
+			g2d.setFont(new Font(FONT_NAME, Font.BOLD, 18));
 			if (me.weapon.currentAmmo == 0) g2d.setColor(Color.RED); else g2d.setColor(Color.CYAN);
 			String ammoText = me.weapon.isReloading ? "リロード中..." : "残弾: " + me.weapon.currentAmmo + "/" + me.weapon.maxAmmo;
 			g2d.drawString(ammoText, MAP_X, MAP_Y + MAP_HEIGHT + UI_AMMO_Y_OFFSET);
@@ -358,7 +358,7 @@ public class GamePanel extends JPanel {
 		// 背景を暗くする
 		g2d.setColor(new Color(0,0,0,200)); g2d.fillRect(0,0,getWidth(),getHeight());
 
-		g2d.setColor(Color.WHITE); g2d.setFont(new Font("Dialog", Font.BOLD, 40));
+		g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 40));
 		centerString(g2d, "強化を選択してください", 150);
 
 		int startX = UI_CARD_START_X; int y = UI_CARD_Y; int w = UI_CARD_WIDTH; int h = UI_CARD_HEIGHT; int gap = UI_CARD_GAP;
@@ -379,9 +379,9 @@ public class GamePanel extends JPanel {
 			g2d.draw(rect); g2d.setColor(new Color(50,50,50)); g2d.fill(rect);
 
 			// テキスト描画
-			g2d.setColor(Color.WHITE); g2d.setFont(new Font("Dialog", Font.BOLD, 20));
+			g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 20));
 			g2d.drawString(p.name, rect.x+10, rect.y+40);
-			g2d.setFont(new Font("Dialog", Font.PLAIN, 12));
+			g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 12));
 			g2d.drawString(p.desc, rect.x+10, rect.y+70);
 			g2d.setColor(Color.CYAN); g2d.drawString("長所: "+p.merit, rect.x+10, rect.y+120);
 			g2d.setColor(Color.PINK); g2d.drawString("短所: "+p.demerit, rect.x+10, rect.y+150);
@@ -393,7 +393,7 @@ public class GamePanel extends JPanel {
 	 */
 	private void drawRoundEndWait(Graphics2D g2d) {
 		g2d.setColor(new Color(0,0,0,150)); g2d.fillRect(0,0,getWidth(),getHeight());
-		g2d.setColor(Color.WHITE); g2d.setFont(new Font("Dialog", Font.BOLD, 40));
+		g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 40));
 		centerString(g2d, logic.resultMessage, 200);
 		centerString(g2d, "相手の準備を待っています...", 300);
 	}
@@ -402,7 +402,7 @@ public class GamePanel extends JPanel {
 	 * ラウンド開始前のカウントダウン描画。
 	 */
 	private void drawCountdown(Graphics2D g2d) {
-		g2d.setColor(Color.YELLOW); g2d.setFont(new Font("Arial", Font.BOLD, 100));
+		g2d.setColor(Color.YELLOW); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 100));
 		centerString(g2d, String.valueOf(client.countdownTimer/FPS + 1), 300);
 	}
 
@@ -413,10 +413,10 @@ public class GamePanel extends JPanel {
 		g2d.setColor(new Color(0,0,0,200)); g2d.fillRect(0,0,getWidth(),getHeight());
 
 		g2d.setColor(logic.resultMessage.contains("勝利") ? Color.YELLOW : Color.GRAY);
-		g2d.setFont(new Font("Dialog", Font.BOLD, 50));
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 50));
 		centerString(g2d, logic.resultMessage, 300);
 
-		g2d.setColor(Color.WHITE); g2d.setFont(new Font("Dialog", Font.PLAIN, 20));
+		g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 20));
 		centerString(g2d, "クリックしてタイトルへ戻る", 400);
 	}
 
