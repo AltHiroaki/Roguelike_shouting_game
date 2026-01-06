@@ -102,7 +102,11 @@ public class Bullet {
 		// 特殊効果による色のオーバーライド
 		if ((typeFlag & FLAG_POISON) != 0) g2d.setColor(Color.MAGENTA); // 毒
 		if ((typeFlag & FLAG_COLD) != 0) g2d.setColor(Color.CYAN);    // 冷却
-		if ((typeFlag & FLAG_GHOST) != 0) g2d.setColor(new Color(255, 255, 255, 150)); // ゴースト（半透明）
+
+		// GHOSTの場合、壁貫通有効時間内のみ半透明にする
+		if ((typeFlag & FLAG_GHOST) != 0 && lifeTimer <= GHOST_VALID_TIME) {
+			g2d.setColor(new Color(255, 255, 255, 150)); // ゴースト（半透明）
+		}
 
 		// 中心座標に合わせて描画
 		g2d.fillOval((int)x - size / 2, (int)y - size / 2, size, size);
