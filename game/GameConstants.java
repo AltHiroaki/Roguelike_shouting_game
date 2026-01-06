@@ -14,7 +14,7 @@ public class GameConstants {
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
 
-	// 修正: 衝突判定のバッファ (壁にめり込まないようにする余白)
+	// 衝突判定のバッファ (壁にめり込まないようにする余白)
 	public static final double MAP_COLLISION_BUFFER = 2.0;
 
 	// UI レイアウト
@@ -51,7 +51,7 @@ public class GameConstants {
 	public static final int GUARD_COOLDOWN = 300;
 	public static final double GUARD_DAMAGE_CUT_RATE = 0.1;
 
-	// 修正: テレポート距離
+	// テレポート距離
 	public static final double SKILL_TELEPORT_DISTANCE = 150.0;
 
 	// === 武器・弾丸 基本設定 ===
