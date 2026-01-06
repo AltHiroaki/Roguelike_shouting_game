@@ -427,8 +427,9 @@ public class Player {
 
 	/**
 	 * サーバーへ現在のステータス（HP最大値など）を送信します。
+	 * 変更: リロード時間も送信するようにしました。
 	 */
 	public void sendStatus(PrintWriter out) {
-		out.println("STATUS " + id + " " + maxHp + " " + size);
+		out.println("STATUS " + id + " " + maxHp + " " + size + " " + weapon.reloadDuration);
 	}
 }
