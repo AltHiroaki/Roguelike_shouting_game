@@ -174,9 +174,9 @@ public class GameConstants {
 	public static final double POWERUP_CONTROL_RELOAD_MULT = 1.3;
 
 	// EffectIdaten (韋駄天)
-	public static final double POWERUP_IDATEN_SPEED_MULT = 2.0;
+	public static final double POWERUP_IDATEN_SPEED_MULT = 1.5;
 	public static final double POWERUP_IDATEN_DAMAGE_MULT = 0.6;
-	public static final double POWERUP_IDATEN_HP_MULT = 0.8;
+	public static final double POWERUP_IDATEN_HP_MULT = 0.5;
 
 	// EffectColdShot (冷却)
 	public static final double POWERUP_COLD_RELOAD_MULT = 1.5;
