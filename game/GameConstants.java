@@ -161,6 +161,8 @@ public class GameConstants {
 	// EffectReelGun (3点バースト)
 	public static final int POWERUP_REEL_BURST_ADD = 2;
 	public static final double POWERUP_REEL_RELOAD_MULT = 1.3;
+	public static final int POWERUP_REEL_INTERVAL_ADD = 30;
+
 
 	// EffectShower (シャワー)
 	public static final int POWERUP_SHOWER_PELLETS_ADD = 14;
@@ -197,9 +199,6 @@ public class GameConstants {
 
 	// EffectQuickReload
 	public static final double POWERUP_QUICK_RELOAD_MULT = 0.5;
-
-	// EffectExtendedMag
-	public static final int EFFECT_EXTMAG_AMOUNT = 5;
 
 	// Tank / BigBoy
 	/** Big BoyのHP増加倍率 (1.5 = 150%) */

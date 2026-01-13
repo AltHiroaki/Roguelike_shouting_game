@@ -239,6 +239,7 @@ class EffectReelGun extends WeaponEffect {
 	public void applyStats(Weapon w) {
 		w.bulletsPerBurst += POWERUP_REEL_BURST_ADD;
 		w.reloadDuration *= POWERUP_REEL_RELOAD_MULT;
+		w.fireInterval += POWERUP_REEL_INTERVAL_ADD;
 	}
 }
 
