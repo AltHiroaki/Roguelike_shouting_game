@@ -20,7 +20,7 @@ public class GamePanel extends JPanel {
 	// --- UIコンポーネントの矩形情報（クリック判定用） ---
 	Rectangle startButtonRect = new Rectangle(300, 500, 200, 60);
 	Rectangle abilityInfoBtnRect = new Rectangle(550, 550, 150, 40); // 能力紹介ボタン
-	Rectangle controlsInfoBtnRect = new Rectangle(100, 550, 150, 40); // 操作説明ボタン (新規追加)
+	Rectangle controlsInfoBtnRect = new Rectangle(100, 550, 150, 40); // 操作説明ボタン
 	Rectangle[] mapButtons = new Rectangle[3];
 	Rectangle[] cardRects = new Rectangle[3];
 
@@ -77,14 +77,19 @@ public class GamePanel extends JPanel {
 	private void handleUIMouse(int mx, int my) {
 		if (client.currentState == ActionClient.GameState.TITLE) {
 			// タイトル画面: マップ選択
-			int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
-			for (int i = 0; i < 3; i++) {
-				if (mapButtons[i].contains(mx, my)) {
-					client.selectedMapType = types[i];
-					repaint();
-					return;
+			// ▼▼▼ 修正: ホスト(ID=1)のみ選択可能にする ▼▼▼
+			if (client.myId == 1) {
+				int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
+				for (int i = 0; i < 3; i++) {
+					if (mapButtons[i].contains(mx, my)) {
+						client.selectedMapType = types[i];
+						repaint();
+						return;
+					}
 				}
 			}
+			// ▲▲▲ 修正 ▲▲▲
+
 			if (startButtonRect.contains(mx, my)) client.joinGame();
 
 			// 能力紹介ボタン
@@ -118,7 +123,7 @@ public class GamePanel extends JPanel {
 			}
 
 		} else if (client.currentState == ActionClient.GameState.CONTROLS_INFO) {
-			// 操作説明画面 (新規追加)
+			// 操作説明画面
 			if (backButtonRect.contains(mx, my)) {
 				client.currentState = ActionClient.GameState.TITLE;
 				repaint();
@@ -157,7 +162,7 @@ public class GamePanel extends JPanel {
 		switch (client.currentState) {
 			case TITLE:            drawTitleScreen(g2d); break;
 			case ABILITY_INFO:     drawAbilityInfoScreen(g2d); break;
-			case CONTROLS_INFO:    drawControlsScreen(g2d); break; // 新規追加
+			case CONTROLS_INFO:    drawControlsScreen(g2d); break;
 			case WAITING:          drawWaitingScreen(g2d); break;
 			case PLAYING:          drawGameScreen(g2d); break;
 			case ROUND_END_SELECT: drawGameScreen(g2d); drawPowerUpSelection(g2d); break;
@@ -199,13 +204,32 @@ public class GamePanel extends JPanel {
 		String[] labels = {"平原 (A)", "通路 (B)", "要塞 (C)"};
 		int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
 
-		for (int i = 0; i < 3; i++) {
-			Rectangle btn = mapButtons[i];
-			if (client.selectedMapType == types[i]) g2d.setColor(Color.YELLOW); else g2d.setColor(Color.LIGHT_GRAY);
-			g2d.fill(btn);
-			g2d.setColor(Color.BLACK);
-			String lb = labels[i]; int sw = g2d.getFontMetrics().stringWidth(lb);
-			g2d.drawString(lb, btn.x + (btn.width - sw)/2, btn.y + 26);
+		if (client.myId == 1) {
+			// ホストの場合: 通常描画
+			for (int i = 0; i < 3; i++) {
+				Rectangle btn = mapButtons[i];
+				if (client.selectedMapType == types[i]) g2d.setColor(Color.YELLOW); else g2d.setColor(Color.LIGHT_GRAY);
+				g2d.fill(btn);
+				g2d.setColor(Color.BLACK);
+				String lb = labels[i]; int sw = g2d.getFontMetrics().stringWidth(lb);
+				g2d.drawString(lb, btn.x + (btn.width - sw)/2, btn.y + 26);
+			}
+			// ガイドメッセージ
+			g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
+			centerString(g2d, "マップを選択してください", 360);
+		} else {
+			// ゲストの場合: グレーアウトして無効化
+			for (int i = 0; i < 3; i++) {
+				Rectangle btn = mapButtons[i];
+				g2d.setColor(Color.DARK_GRAY); // 暗い色
+				g2d.fill(btn);
+				g2d.setColor(Color.GRAY);
+				String lb = labels[i]; int sw = g2d.getFontMetrics().stringWidth(lb);
+				g2d.drawString(lb, btn.x + (btn.width - sw)/2, btn.y + 26);
+			}
+			// ガイドメッセージ
+			g2d.setColor(Color.LIGHT_GRAY); g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
+			centerString(g2d, "※マップ選択権はホスト(Player1)にあります", 360);
 		}
 
 		g2d.setColor(Color.GREEN); g2d.fill(startButtonRect);
@@ -217,7 +241,7 @@ public class GamePanel extends JPanel {
 		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
 		g2d.drawString("能力紹介", abilityInfoBtnRect.x + 45, abilityInfoBtnRect.y + 25);
 
-		// 操作説明ボタン (新規追加)
+		// 操作説明ボタン
 		g2d.setColor(Color.ORANGE); g2d.fill(controlsInfoBtnRect);
 		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
 		g2d.drawString("操作説明", controlsInfoBtnRect.x + 45, controlsInfoBtnRect.y + 25);
@@ -257,7 +281,7 @@ public class GamePanel extends JPanel {
 		g2d.drawString("射撃: 左クリック", x + 30, y);
 		y += gap;
 		g2d.drawString("ガード: 右クリック", x + 30, y);
-		y += gap * 2;
+		y += gap * 1;
 
 		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 24));
 		g2d.drawString("【ゲームルール】", x, y);
