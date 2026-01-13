@@ -21,7 +21,7 @@ public class GameConstants {
 	// マップ・描画設定
 	// ==========================================
 	public static final int MAP_X = 50;
-	public static final int MAP_Y = 80;
+	public static final int MAP_Y = 100;
 	public static final int MAP_WIDTH = 700;
 	public static final int MAP_HEIGHT = 450;
 
@@ -122,6 +122,7 @@ public class GameConstants {
 	public static final int P_FLAG_GUARD     = 2;      // 0010
 	public static final int P_FLAG_INVISIBLE = 4;      // 0100
 	public static final int P_FLAG_THE_WORLD = 8;      // 1000 ("世界"発動通知用)
+	public static final int P_FLAG_POISON    = 16;     // 10000 (毒状態通知用)
 
 	// カラー定義
 	public static final Color COLOR_BG = new Color(20, 25, 35);

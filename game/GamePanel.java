@@ -115,8 +115,9 @@ public class GamePanel extends JPanel {
 			// ラウンド終了時: パワーアップカードの選択
 			for(int i=0; i<logic.presentedPowerUps.size(); i++) {
 				if(cardRects[i] != null && cardRects[i].contains(mx, my)) {
-					logic.presentedPowerUps.get(i).apply(logic.players.get(client.myId));
-					client.onPowerUpSelected();
+					PowerUp p = logic.presentedPowerUps.get(i);
+					p.apply(logic.players.get(client.myId));
+					client.onPowerUpSelected(p.name);
 					break;
 				}
 			}
@@ -325,6 +326,39 @@ public class GamePanel extends JPanel {
 		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
 		g2d.setColor(COLOR_PLAYER_ME); g2d.drawString("自分: " + getStars(logic.myWinCount), 50, 40);
 		g2d.setColor(COLOR_PLAYER_ENEMY);  g2d.drawString("相手: " + getStars(logic.enemyWinCount), 500, 40);
+
+		// 能力の頭文字を表示
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 20));
+		int iconGap = 25; // 文字の間隔
+
+		// 自分の能力（左側：スコアの下あたり）
+		if (logic.players.containsKey(client.myId)) {
+			ArrayList<String> myAbs = logic.players.get(client.myId).abilityNames;
+			g2d.setColor(Color.CYAN);
+			for(int i=0; i<myAbs.size(); i++) {
+				String name = myAbs.get(i);
+				String initial = (name.length() > 0) ? name.substring(0, 1) : "?";
+				// Y座標 80 あたりに横並びで表示
+				g2d.drawString(initial, 50 + (i * iconGap), 80);
+			}
+		}
+
+		// 相手の能力（右側）
+		int enemyId = -1;
+		for(int id : logic.players.keySet()) {
+			if(id != client.myId) { enemyId = id; break; }
+		}
+
+		if (enemyId != -1 && logic.players.containsKey(enemyId)) {
+			ArrayList<String> enAbs = logic.players.get(enemyId).abilityNames;
+			g2d.setColor(Color.PINK);
+			for(int i=0; i<enAbs.size(); i++) {
+				String name = enAbs.get(i);
+				String initial = (name.length() > 0) ? name.substring(0, 1) : "?";
+				// 相手側（X: 500くらいから開始）
+				g2d.drawString(initial, 500 + (i * iconGap), 80);
+			}
+		}
 
 		// マップ枠線
 		g2d.setColor(COLOR_TEXT); g2d.setStroke(new BasicStroke(3));

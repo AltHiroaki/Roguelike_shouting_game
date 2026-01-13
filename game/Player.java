@@ -47,6 +47,9 @@ public class Player {
 
 	public boolean triggerTheWorldFrame = false; // "世界"が発動した瞬間のフレームかどうか
 
+	// 取得した能力名のリスト（表示用）
+	public ArrayList<String> abilityNames = new ArrayList<>();
+
 	// --- 所持パッシブ ---
 	public boolean hasPassiveThirst = false;
 	public boolean hasPassiveDelay = false;
@@ -332,6 +335,7 @@ public class Player {
 		if (weapon.isReloading) flags |= P_FLAG_RELOAD;    // 1ビット目
 		if (isGuarding)         flags |= P_FLAG_GUARD;     // 2ビット目
 		if (invisibleTimer > 0) flags |= P_FLAG_INVISIBLE; // 3ビット目
+		if (poisonTimer > 0)    flags |= P_FLAG_POISON;    // 5ビット目
 
 		// "世界"の発動瞬間
 		if (triggerTheWorldFrame) {
@@ -453,15 +457,10 @@ public class Player {
 		if (poisonTimer > 0) {
 			// 毒: 紫色。スタック数に応じて濃くする（最大255）
 			int alpha = Math.min(100 + poisonStack * 10, 200);
+			if (poisonStack == 0) alpha = 150; // 相手画面用に固定値を設定
+
 			g2d.setColor(new Color(128, 0, 128, alpha));
 			g2d.fillOval(-size, -size, size * 2, size * 2);
-
-			// スタック数表示
-			g2d.rotate(-angle); // 文字は回転させない
-			g2d.setColor(Color.WHITE);
-			g2d.setFont(new Font("Arial", Font.BOLD, 12));
-			g2d.drawString(String.valueOf(poisonStack), 10, -10);
-			g2d.rotate(angle);
 		}
 		if (coldTimer > 0) {
 			g2d.setColor(new Color(0, 255, 255, 100));

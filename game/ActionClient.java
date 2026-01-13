@@ -131,8 +131,13 @@ public class ActionClient extends JFrame {
 
 	/**
 	 * パワーアップ選択後に呼ばれます。次のラウンドの準備完了をサーバーへ通知します。
+	 * 引数に取得した能力名を追加
 	 */
-	public void onPowerUpSelected() {
+	public void onPowerUpSelected(String abilityName) {
+		// 能力名だけ送る（例: "ABILITY Hill"）
+		// サーバーがこれを "ABILITY Hill <myId>" に変換して全員に配る
+		out.println("ABILITY " + abilityName);
+
 		if (logic.players.containsKey(myId)) logic.players.get(myId).sendStatus(out);
 		out.println("NEXT_ROUND_READY " + myId);
 		currentState = GameState.ROUND_END_WAIT;
@@ -220,9 +225,12 @@ public class ActionClient extends JFrame {
 					p.weapon.isReloading = (flags & P_FLAG_RELOAD) != 0;
 					p.isGuarding         = (flags & P_FLAG_GUARD) != 0;
 					boolean isInvisible  = (flags & P_FLAG_INVISIBLE) != 0;
+					boolean isPoisoned   = (flags & P_FLAG_POISON) != 0;
 
 					// 透明化タイマーの簡易設定 (表示用なので0か正の値があればOK)
 					p.invisibleTimer = isInvisible ? 10 : 0;
+					// 毒タイマーの簡易設定
+					p.poisonTimer = isPoisoned ? 10 : 0;
 
 					// "世界"の発動フラグチェック
 					boolean triggeredTheWorld = (flags & P_FLAG_THE_WORLD) != 0;
@@ -301,6 +309,20 @@ public class ActionClient extends JFrame {
 							Double.parseDouble(tokens[i+2]), Double.parseDouble(tokens[i+3])));
 				}
 				logic.resetPositions(myId);
+			} else if (cmd.equals("ABILITY")) {
+				// サーバーからの形式: ABILITY <AbilityName> <SenderID>
+				// tokens[0]: ABILITY
+				// tokens[1]: Hill (能力名)
+				// tokens[2]: 1 (ID)
+
+				if (tokens.length >= 3) {
+					String aName = tokens[1]; // 能力名
+					int pid = Integer.parseInt(tokens[2]); // IDは最後に来る
+
+					if (logic.players.containsKey(pid)) {
+						logic.players.get(pid).abilityNames.add(aName);
+					}
+				}
 			}
 		} catch (Exception e) { e.printStackTrace(); }
 	}
