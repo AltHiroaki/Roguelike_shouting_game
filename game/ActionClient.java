@@ -30,8 +30,8 @@ public class ActionClient extends JFrame {
 	private javax.swing.Timer gameTimer;
 
 	// --- ゲーム進行状態 ---
-	// ABILITY_INFO を追加
-	public enum GameState { TITLE, ABILITY_INFO, WAITING, PLAYING, ROUND_END_SELECT, ROUND_END_WAIT, COUNTDOWN, GAME_OVER }
+	// ABILITY_INFO, CONTROLS_INFO を追加
+	public enum GameState { TITLE, ABILITY_INFO, CONTROLS_INFO, WAITING, PLAYING, ROUND_END_SELECT, ROUND_END_WAIT, COUNTDOWN, GAME_OVER }
 	public GameState currentState = GameState.TITLE;
 
 	public int selectedMapType = MapGenerator.MAP_TYPE_C;

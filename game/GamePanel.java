@@ -20,10 +20,11 @@ public class GamePanel extends JPanel {
 	// --- UIコンポーネントの矩形情報（クリック判定用） ---
 	Rectangle startButtonRect = new Rectangle(300, 500, 200, 60);
 	Rectangle abilityInfoBtnRect = new Rectangle(550, 550, 150, 40); // 能力紹介ボタン
+	Rectangle controlsInfoBtnRect = new Rectangle(100, 550, 150, 40); // 操作説明ボタン (新規追加)
 	Rectangle[] mapButtons = new Rectangle[3];
 	Rectangle[] cardRects = new Rectangle[3];
 
-	// 能力紹介画面コンポーネント
+	// 能力紹介・操作説明画面共通コンポーネント
 	ArrayList<PowerUp> allPowerUps;
 	Rectangle backButtonRect = new Rectangle(50, 50, 100, 40);
 	int selectedAbilityIndex = 0;
@@ -93,6 +94,11 @@ public class GamePanel extends JPanel {
 				scrollIndex = 0;           // スクロールリセット
 				repaint();
 			}
+			// 操作説明ボタン
+			if (controlsInfoBtnRect.contains(mx, my)) {
+				client.currentState = ActionClient.GameState.CONTROLS_INFO;
+				repaint();
+			}
 
 		} else if (client.currentState == ActionClient.GameState.ABILITY_INFO) {
 			// 能力紹介画面
@@ -109,6 +115,13 @@ public class GamePanel extends JPanel {
 						repaint();
 					}
 				}
+			}
+
+		} else if (client.currentState == ActionClient.GameState.CONTROLS_INFO) {
+			// 操作説明画面 (新規追加)
+			if (backButtonRect.contains(mx, my)) {
+				client.currentState = ActionClient.GameState.TITLE;
+				repaint();
 			}
 
 		} else if (client.currentState == ActionClient.GameState.ROUND_END_SELECT) {
@@ -144,6 +157,7 @@ public class GamePanel extends JPanel {
 		switch (client.currentState) {
 			case TITLE:            drawTitleScreen(g2d); break;
 			case ABILITY_INFO:     drawAbilityInfoScreen(g2d); break;
+			case CONTROLS_INFO:    drawControlsScreen(g2d); break; // 新規追加
 			case WAITING:          drawWaitingScreen(g2d); break;
 			case PLAYING:          drawGameScreen(g2d); break;
 			case ROUND_END_SELECT: drawGameScreen(g2d); drawPowerUpSelection(g2d); break;
@@ -202,6 +216,60 @@ public class GamePanel extends JPanel {
 		g2d.setColor(Color.ORANGE); g2d.fill(abilityInfoBtnRect);
 		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
 		g2d.drawString("能力紹介", abilityInfoBtnRect.x + 45, abilityInfoBtnRect.y + 25);
+
+		// 操作説明ボタン (新規追加)
+		g2d.setColor(Color.ORANGE); g2d.fill(controlsInfoBtnRect);
+		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+		g2d.drawString("操作説明", controlsInfoBtnRect.x + 45, controlsInfoBtnRect.y + 25);
+	}
+
+	/**
+	 * 操作説明画面の描画
+	 */
+	private void drawControlsScreen(Graphics2D g2d) {
+		// 半透明背景
+		g2d.setColor(new Color(0, 0, 0, 200));
+		g2d.fillRect(20, 20, getWidth()-40, getHeight()-40);
+
+		// 戻るボタン
+		g2d.setColor(Color.GRAY); g2d.fill(backButtonRect);
+		g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
+		g2d.drawString("戻る", backButtonRect.x + 30, backButtonRect.y + 25);
+
+		// タイトル
+		g2d.setColor(Color.CYAN); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 40));
+		centerString(g2d, "操作説明", 80);
+
+		int x = 100;
+		int y = 150;
+		int gap = 50;
+
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 24));
+		g2d.setColor(Color.WHITE);
+
+		g2d.drawString("【基本操作】", x, y);
+		y += 40;
+		g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 20));
+		g2d.drawString("移動: W, A, S, D", x + 30, y);
+		y += gap;
+		g2d.drawString("照準: マウスカーソル", x + 30, y);
+		y += gap;
+		g2d.drawString("射撃: 左クリック", x + 30, y);
+		y += gap;
+		g2d.drawString("ガード: 右クリック", x + 30, y);
+		y += gap * 2;
+
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 24));
+		g2d.drawString("【ゲームルール】", x, y);
+		y += 40;
+		g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 20));
+		g2d.drawString("・相手のHPを0にするとラウンド勝利。", x + 30, y);
+		y += gap;
+		g2d.drawString("・先に5勝したプレイヤーの完全勝利。", x + 30, y);
+		y += gap;
+		g2d.drawString("・ラウンド敗者は、次のラウンドで強力な能力を取得可能。", x + 30, y);
+		y += gap;
+		g2d.drawString("・一部の能力は「ガード」した瞬間に発動する。", x + 30, y);
 	}
 
 	/**
