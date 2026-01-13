@@ -83,7 +83,7 @@ public class GameConstants {
 	// ==========================================
 	public static final int WEAPON_DEFAULT_AMMO = 5;
 	public static final int WEAPON_DEFAULT_RELOAD = 60;
-	public static final int WEAPON_DEFAULT_DAMAGE = 20;
+	public static final int WEAPON_DEFAULT_DAMAGE = 15;
 	public static final double WEAPON_DEFAULT_SPEED = 10.0;
 	public static final int WEAPON_DEFAULT_SIZE = 8;
 	public static final int WEAPON_BURST_INTERVAL = 5;
@@ -144,6 +144,10 @@ public class GameConstants {
 	public static final double POWERUP_RISING_SPEED_MULT = 2.0;
 	public static final double POWERUP_RISING_DAMAGE_MULT = 0.8;
 
+	// EffectPoison(毒)
+	public static final double POWERUP_POISON_DAMAGE_MULT = 0.6;
+	public static final int POWERUP_POISON_COUNT_MULT = 3;
+
 	// EffectImpactShot (高威力)
 	public static final double POWERUP_IMPACT_DAMAGE_MULT = 2.0;
 	public static final double POWERUP_IMPACT_SPEED_MULT = 2.0;
@@ -197,7 +201,7 @@ public class GameConstants {
 	// EffectExtendedMag
 	public static final int EFFECT_EXTMAG_AMOUNT = 5;
 
-	// Tank / BigBoy (割合変更対応)
+	// Tank / BigBoy
 	/** Big BoyのHP増加倍率 (1.5 = 150%) */
 	public static final double POWERUP_TANK_HP_MULT = 1.5;
 	public static final double POWERUP_TANK_SIZE_MULT = 2.0;

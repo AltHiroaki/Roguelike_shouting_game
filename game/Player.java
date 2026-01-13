@@ -23,6 +23,7 @@ public class Player {
 
 	// --- 状態異常タイマー ---
 	public int poisonTimer = 0;
+	public int poisonStack = 0;
 	public int coldTimer = 0;
 	public int thirstTimer = 0;
 	public int confidenceTimer = 0;
@@ -84,6 +85,7 @@ public class Player {
 	public void resetForRound() {
 		hp = maxHp;
 		poisonTimer = 0;
+		poisonStack = 0;
 		coldTimer = 0;
 		thirstTimer = 0;
 		confidenceTimer = 0;
@@ -285,9 +287,18 @@ public class Player {
 
 		// 状態異常処理
 		if (poisonTimer > 0) {
-			if (GameLogic.frameCount % 30 == 0) hp--;
+			// 30フレーム(0.5秒)ごとにダメージ
+			if (GameLogic.frameCount % 30 == 0) {
+				// スタック数*3がそのままダメージになる（最低1ダメージ）
+				int dmg = Math.max(1, poisonStack*POWERUP_POISON_COUNT_MULT);
+				hp -= dmg;
+			}
 			poisonTimer--;
+		} else {
+			// タイマーが切れたらスタックもリセット
+			poisonStack = 0;
 		}
+
 		if (coldTimer > 0) coldTimer--;
 		if (thirstTimer > 0) thirstTimer--;
 		if (confidenceTimer > 0) {
@@ -440,8 +451,17 @@ public class Player {
 
 		// 状態異常エフェクトの描画
 		if (poisonTimer > 0) {
-			g2d.setColor(new Color(128, 0, 128, 100));
+			// 毒: 紫色。スタック数に応じて濃くする（最大255）
+			int alpha = Math.min(100 + poisonStack * 10, 200);
+			g2d.setColor(new Color(128, 0, 128, alpha));
 			g2d.fillOval(-size, -size, size * 2, size * 2);
+
+			// スタック数表示
+			g2d.rotate(-angle); // 文字は回転させない
+			g2d.setColor(Color.WHITE);
+			g2d.setFont(new Font("Arial", Font.BOLD, 12));
+			g2d.drawString(String.valueOf(poisonStack), 10, -10);
+			g2d.rotate(angle);
 		}
 		if (coldTimer > 0) {
 			g2d.setColor(new Color(0, 255, 255, 100));

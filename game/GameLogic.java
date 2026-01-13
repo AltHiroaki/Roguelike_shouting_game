@@ -183,7 +183,10 @@ public class GameLogic {
 				b.deactivate();
 
 				// 弾の特殊効果適用
-				if ((b.typeFlag & FLAG_POISON) != 0) me.poisonTimer = PLAYER_POISON_DURATION;
+				if ((b.typeFlag & FLAG_POISON) != 0) {
+					me.poisonTimer = PLAYER_POISON_DURATION; // タイマー更新
+					me.poisonStack++; // スタック加算
+				}
 				if ((b.typeFlag & FLAG_COLD) != 0) me.coldTimer = PLAYER_COLD_DURATION;
 				if ((b.typeFlag & FLAG_HILL) != 0) out.println("HEAL " + b.ownerId + " " + (b.damage/2));
 

@@ -66,7 +66,7 @@ class PowerUpFactory {
 			public void apply(Player p) { p.weapon.addEffect(new EffectReelGun()); }});
 
 		all.add(new PowerUp("Shower", "シャワー", "15発拡散", "威力30% リロード1.5倍",
-				"【解説】\n広範囲にランダム速度で多数の弾をばら撒く。\n【運用】\n狙いが甘くても当たるため、近〜中距離の押し付けが強力。\n「Hill（吸血）」と組み合わせると回復効率が良い。") {
+				"【解説】\n広範囲にランダム速度で多数の弾をばら撒く。\n【運用】\n狙いが甘くても当たるため、近〜中距離の押し付けが強力。\n「Hill（吸血）」や「Poison（毒）」と相性抜群。") {
 			public void apply(Player p) { p.weapon.addEffect(new EffectShower()); }});
 
 		all.add(new PowerUp("Reflect", "反射", "反射数+2 威力1.1倍", "リロード1.2倍",
@@ -74,11 +74,11 @@ class PowerUpFactory {
 			public void apply(Player p) { p.weapon.addEffect(new EffectReflection()); }});
 
 		all.add(new PowerUp("No Control", "制御不能", "反射+5 速度1.2倍", "リロード1.3倍",
-				"【解説】\n反射回数が大幅に増え弾速も上がるが、制御が難しい。\n【運用】\n狭い通路や部屋に撃ち込むことで弾幕地獄を作り出せる。\n自爆のリスクもあるため、気をつけよ。") {
+				"【解説】\n反射回数が大幅に増え弾速も上がるが、制御が難しい。\n【運用】\n狭い通路や部屋に撃ち込むことで弾幕地獄を作り出せる。\n自爆のリスクもあり、難しい。") {
 			public void apply(Player p) { p.weapon.addEffect(new EffectOutOfControl()); }});
 
 		all.add(new PowerUp("Idaten", "韋駄天", "移動・弾速1.5倍", "HP半減 威力60%",
-				"【解説】\n移動速度と弾速が跳ね上がるが、非常に撃たれ弱くなる。\n【運用】\n被弾＝死と心得よ。\n常に動き回り、相手の死角を取り続けろ。\nヒット＆アウェイ戦法の極致。") {
+				"【解説】\n移動速度と弾速が跳ね上がるが、非常に撃たれ弱くなる。\n【運用】\n被弾＝死と心得よ。常に動き回り、相手の死角を取り続けろ。\nヒット＆アウェイ戦法の極致。") {
 			public void apply(Player p) { p.weapon.addEffect(new EffectIdaten()); p.applyPowerUpStats(); }});
 
 		all.add(new PowerUp("Cold", "冷却弾", "相手速度50%", "リロード1.5倍",
@@ -86,11 +86,11 @@ class PowerUpFactory {
 			public void apply(Player p) { p.weapon.addEffect(new EffectColdShot()); }});
 
 		all.add(new PowerUp("3 in 1", "三位一体", "威力・速度2倍", "弾数-2 リロード1.5倍",
-				"【解説】\n基本性能が大幅に強化されるが、装弾数が激減する。\n【運用】\n「Big Capacity」等で弾数を補わないと\nすぐに弾切れになる。\nリロードの隙をカバーできるスキル\nとの併用が推奨される。") {
+				"【解説】\n基本性能が大幅に強化されるが、装弾数が激減する。\n【運用】\n「Big Capacity」等で弾数を補わないとすぐに弾切れになる。\nリロードの隙をカバーできるスキルとの併用が推奨される。") {
 			public void apply(Player p) { p.weapon.addEffect(new Effect3in1()); }});
 
-		all.add(new PowerUp("Poison", "毒", "DOTダメージ", "リロード1.25倍",
-				"【解説】\n命中後、一定時間継続ダメージを与える。\n【運用】\n逃げ回る相手に対して有効。一度当てれば、\n障害物に隠れられてもHP差を広げることができる。") {
+		all.add(new PowerUp("Poison", "毒", "毒スタック付与", "リロード1.25倍 威力60%",
+				"【解説】\n命中毎に毒スタック蓄積。スタック数に応じて継続ダメージ増加。\n【運用】\n当て続ければダメージが加速的に増える。\n「Shower」等でスタックを一気に溜める戦法が極悪。") {
 			public void apply(Player p) { p.weapon.addEffect(new EffectPoisonNew()); }});
 
 		all.add(new PowerUp("Ghost", "ゴースト", "短時間壁貫通", "リロード1.25倍",
@@ -118,7 +118,7 @@ class PowerUpFactory {
 			public void apply(Player p) { p.hasSkillTacticalReload = true; }});
 
 		all.add(new PowerUp("Exc. Defense", "専守防衛", "2秒後再発動 HP1.3倍", "CD+2秒",
-				"【解説】\nHPが増え、ガード終了の2秒後に\nもう一度ガードが発動する。\n【運用】\n守りは固くなるが、自分の攻撃ターンが遅れる点に注意。\n「Poison」などでリードを奪ってから守る時に強い。") {
+				"【解説】\nHPが増え、\nガード終了の2秒後にもう一度ガードが発動する。\n【運用】\n守りは固くなるが、自分の攻撃ターンが遅れる点に注意。\n「Poison」などでリードを奪ってから守る時に強い。") {
 			public void apply(Player p) { p.hasSkillExclusiveDefense = true; p.applyPowerUpStats(); }});
 
 		all.add(new PowerUp("Invisible", "透明化", "防御後透明化", "CD+5秒",
