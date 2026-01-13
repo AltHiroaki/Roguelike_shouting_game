@@ -310,14 +310,20 @@ public class ActionClient extends JFrame {
 				}
 				logic.resetPositions(myId);
 			} else if (cmd.equals("ABILITY")) {
-				// サーバーからの形式: ABILITY <AbilityName> <SenderID>
-				// tokens[0]: ABILITY
-				// tokens[1]: Hill (能力名)
-				// tokens[2]: 1 (ID)
+				// サーバーからの形式: ABILITY <Name Part1> <Name Part2> ... <SenderID>
+				// 必ず最後のトークンがID
 
 				if (tokens.length >= 3) {
-					String aName = tokens[1]; // 能力名
-					int pid = Integer.parseInt(tokens[2]); // IDは最後に来る
+					int idIndex = tokens.length - 1; // 最後のインデックス
+					int pid = Integer.parseInt(tokens[idIndex]); // ID取得
+
+					// 名前部分は index 1 から idIndex-1 まで
+					StringBuilder sb = new StringBuilder();
+					for(int i=1; i<idIndex; i++) {
+						sb.append(tokens[i]);
+						if(i < idIndex - 1) sb.append(" "); // 間にスペースを入れる
+					}
+					String aName = sb.toString();
 
 					if (logic.players.containsKey(pid)) {
 						logic.players.get(pid).abilityNames.add(aName);
