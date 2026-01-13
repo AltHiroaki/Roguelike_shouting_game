@@ -18,7 +18,12 @@ public class GameLogic {
 	public ConcurrentHashMap<Integer, Player> players = new ConcurrentHashMap<>();
 	public Bullet[] bulletPool = new Bullet[MAX_BULLETS];
 	public ArrayList<Line2D.Double> obstacles = new ArrayList<>();
+
+	// 対戦参加中のプレイヤー（ゲーム画面にいる人）
 	public Set<Integer> joinedPlayers = Collections.synchronizedSet(new HashSet<>());
+
+	// サーバーに接続中の全プレイヤーID（ロビー含む）
+	public Set<Integer> connectedPlayerIds = new HashSet<>();
 
 	public int myWinCount = 0;
 	public int enemyWinCount = 0;
@@ -32,6 +37,12 @@ public class GameLogic {
 	public GameLogic() {
 		// オブジェクトプールパターンのため、弾丸インスタンスを事前生成
 		for (int i = 0; i < MAX_BULLETS; i++) bulletPool[i] = new Bullet();
+	}
+
+	// 現在のホスト（IDが一番小さい人）を取得する
+	public int getHostId() {
+		if (connectedPlayerIds.isEmpty()) return 1; // 誰もいなければデフォルト1
+		return Collections.min(connectedPlayerIds);
 	}
 
 	/**
@@ -264,6 +275,9 @@ public class GameLogic {
 		// 2. プレイヤー情報のクリア
 		players.clear();
 		joinedPlayers.clear();
+
+		// 注意: connectedPlayerIds (接続リスト) はここではクリアしない
+		// (タイトル画面に戻ってもサーバーには繋がっているため)
 
 		// 3. スコア・障害物のリセット
 		myWinCount = 0;

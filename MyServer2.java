@@ -26,6 +26,13 @@ class ClientProcThread extends Thread {
 			myOut.println("START " + number);
 			myName = "Player" + number;
 
+			// 1. 他の全員に「自分が来た」と伝える
+			MyServer2.SendAll("ENTER " + number, myName);
+
+			// 2. 自分に「今誰がいるか」を送る
+			String existingUsers = MyServer2.getConnectedUsers();
+			myOut.println("USERS " + existingUsers);
+
 			while (true) {
 				String str = myIn.readLine();
 				if (str != null) {
@@ -67,6 +74,16 @@ class MyServer2 {
 
 	public static void SetFlag(int n, boolean value) {
 		flag[n] = value;
+	}
+
+	public static String getConnectedUsers() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 1; i < MAX_CONNECTION; i++) {
+			if (flag[i]) {
+				sb.append(i).append(" ");
+			}
+		}
+		return sb.toString().trim();
 	}
 
 	public static void main(String[] args) {

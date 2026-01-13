@@ -122,6 +122,7 @@ public class ActionClient extends JFrame {
 		for(int id : logic.players.keySet()) minId = Math.min(minId, id);
 
 		// IDが一番小さいプレイヤーがホスト役としてマップを生成
+		// 注意: ここは「対戦参加者の中での最小ID」なので connectedPlayerIds ではなく players.keySet() を使う
 		if (myId == minId) {
 			logic.obstacles = MapGenerator.generate(selectedMapType);
 			sendObstacleData();
@@ -189,8 +190,19 @@ public class ActionClient extends JFrame {
 				// 初回接続時、自分のIDを受信
 				myId = Integer.parseInt(tokens[1]);
 				logic.players.put(myId, new Player(myId, MAP_X + 100, MAP_Y + 200, COLOR_PLAYER_ME));
+				// 自分を接続リストに追加
+				logic.connectedPlayerIds.add(myId);
+			} else if (cmd.equals("ENTER")) {
+				// 追加: 誰かが接続した
+				int pid = Integer.parseInt(tokens[1]);
+				logic.connectedPlayerIds.add(pid);
+			} else if (cmd.equals("USERS")) {
+				// 既に参加しているユーザーの一覧
+				for(int i=1; i<tokens.length; i++) {
+					logic.connectedPlayerIds.add(Integer.parseInt(tokens[i]));
+				}
 			} else if (cmd.equals("JOIN")) {
-				// 他プレイヤーの参加通知
+				// 他プレイヤーの参加通知 (対戦参加)
 				int pid = Integer.parseInt(tokens[2]);
 				logic.joinedPlayers.add(pid);
 				if (!logic.players.containsKey(pid)) logic.players.put(pid, new Player(pid, 0, 0, COLOR_PLAYER_ENEMY));
@@ -199,8 +211,14 @@ public class ActionClient extends JFrame {
 			} else if (cmd.equals("LEAVE")) {
 				// 切断検知
 				int leaveId = Integer.parseInt(tokens[1]);
-				if (leaveId != myId) {
-					setGameOver("完全勝利！(相手が退出しました)");
+				// 接続リストから削除
+				logic.connectedPlayerIds.remove(leaveId);
+
+				// ゲーム中に対戦相手が落ちた場合のみ勝利判定
+				if (currentState == GameState.PLAYING || currentState == GameState.ROUND_END_SELECT || currentState == GameState.ROUND_END_WAIT) {
+					if (leaveId != myId && logic.joinedPlayers.contains(leaveId)) {
+						setGameOver("完全勝利！(相手が退出しました)");
+					}
 				}
 			} else if (cmd.equals("MOVE")) {
 				// トークン構成: [0]MOVE [1]x [2]y [3]angle [4]hp [5]reloadTimer [6]guardTimer [7]flags [8]id
@@ -310,6 +328,7 @@ public class ActionClient extends JFrame {
 				}
 				logic.resetPositions(myId);
 			} else if (cmd.equals("ABILITY")) {
+				// 修正: スペースを含む能力名("Self Regen"など)に対応
 				// サーバーからの形式: ABILITY <Name Part1> <Name Part2> ... <SenderID>
 				// 必ず最後のトークンがID
 

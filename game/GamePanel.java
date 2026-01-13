@@ -77,8 +77,8 @@ public class GamePanel extends JPanel {
 	private void handleUIMouse(int mx, int my) {
 		if (client.currentState == ActionClient.GameState.TITLE) {
 			// タイトル画面: マップ選択
-			// ▼▼▼ 修正: ホスト(ID=1)のみ選択可能にする ▼▼▼
-			if (client.myId == 1) {
+			// 現在のホスト（最小ID）のみ選択可能にする
+			if (client.myId == logic.getHostId()) {
 				int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
 				for (int i = 0; i < 3; i++) {
 					if (mapButtons[i].contains(mx, my)) {
@@ -88,7 +88,6 @@ public class GamePanel extends JPanel {
 					}
 				}
 			}
-			// ▲▲▲ 修正 ▲▲▲
 
 			if (startButtonRect.contains(mx, my)) client.joinGame();
 
@@ -204,7 +203,10 @@ public class GamePanel extends JPanel {
 		String[] labels = {"平原 (A)", "通路 (B)", "要塞 (C)"};
 		int[] types = {MapGenerator.MAP_TYPE_A, MapGenerator.MAP_TYPE_B, MapGenerator.MAP_TYPE_C};
 
-		if (client.myId == 1) {
+		int hostId = logic.getHostId();
+
+		// 現在のホスト（最小ID）に応じて描画を変える
+		if (client.myId == hostId) {
 			// ホストの場合: 通常描画
 			for (int i = 0; i < 3; i++) {
 				Rectangle btn = mapButtons[i];
@@ -229,7 +231,7 @@ public class GamePanel extends JPanel {
 			}
 			// ガイドメッセージ
 			g2d.setColor(Color.LIGHT_GRAY); g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
-			centerString(g2d, "※マップ選択権はホスト(Player1)にあります", 360);
+			centerString(g2d, "※マップ選択権はホスト(Player" + hostId + ")にあります", 360);
 		}
 
 		g2d.setColor(Color.GREEN); g2d.fill(startButtonRect);
