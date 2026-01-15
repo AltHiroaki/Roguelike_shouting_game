@@ -11,7 +11,7 @@ public class GameConstants {
 	// サーバー・通信設定
 	// ==========================================
 	/** 接続先サーバーの IPアドレス */
-	public static final String SERVER_IP = "133.42.230.124";
+	public static final String SERVER_IP = "192.168.118.1";
 	/** 接続先サーバーのポート番号 */
 	public static final int SERVER_PORT = 10000;
 	/** 参加するゲームの ID */
