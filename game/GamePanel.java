@@ -18,9 +18,9 @@ public class GamePanel extends JPanel {
 	private ActionClient client;
 
 	// --- UIコンポーネントの矩形情報（クリック判定用） ---
-	Rectangle startButtonRect = new Rectangle(300, 500, 200, 60);
-	Rectangle abilityInfoBtnRect = new Rectangle(550, 550, 150, 40); // 能力紹介ボタン
-	Rectangle controlsInfoBtnRect = new Rectangle(100, 550, 150, 40); // 操作説明ボタン
+	Rectangle startButtonRect;
+	Rectangle abilityInfoBtnRect; // 能力紹介ボタン
+	Rectangle controlsInfoBtnRect; // 操作説明ボタン
 	Rectangle[] mapButtons = new Rectangle[3];
 	Rectangle[] cardRects = new Rectangle[3];
 
@@ -63,11 +63,30 @@ public class GamePanel extends JPanel {
 			public void mousePressed(MouseEvent e) { handleUIMouse(e.getX(), e.getY()); }
 		});
 
-		// マップ選択ボタンの配置設定
-		int btnW = 120; int btnH = 40; int startX = 200; int y = 380;
-		mapButtons[0] = new Rectangle(startX, y, btnW, btnH);
-		mapButtons[1] = new Rectangle(startX + 140, y, btnW, btnH);
-		mapButtons[2] = new Rectangle(startX + 280, y, btnW, btnH);
+		// UI配置の計算 (ウィンドウサイズ 1060x790 を前提に中央揃え)
+		// 画面中央のX座標
+		int centerX = 1060 / 2;
+
+		// 1. マップ選択ボタン (中央少し上)
+		int mapBtnW = 120; int mapBtnH = 40; int mapGap = 20;
+		int mapTotalW = (mapBtnW * 3) + (mapGap * 2);
+		int mapStartX = centerX - (mapTotalW / 2);
+		int mapY = 400; // 高さ位置
+
+		mapButtons[0] = new Rectangle(mapStartX, mapY, mapBtnW, mapBtnH);
+		mapButtons[1] = new Rectangle(mapStartX + mapBtnW + mapGap, mapY, mapBtnW, mapBtnH);
+		mapButtons[2] = new Rectangle(mapStartX + (mapBtnW + mapGap) * 2, mapY, mapBtnW, mapBtnH);
+
+		// 2. スタートボタン (ど真ん中、大きく)
+		int startW = 240; int startH = 80;
+		startButtonRect = new Rectangle(centerX - startW/2, 500, startW, startH);
+
+		// 3. 情報ボタン (スタートボタンの下に左右に配置)
+		int infoW = 160; int infoH = 50; int infoGap = 40;
+		// 操作説明(左)
+		controlsInfoBtnRect = new Rectangle(centerX - infoW - infoGap/2, 630, infoW, infoH);
+		// 能力紹介(右)
+		abilityInfoBtnRect = new Rectangle(centerX + infoGap/2, 630, infoW, infoH);
 	}
 
 	/**
@@ -176,7 +195,7 @@ public class GamePanel extends JPanel {
 	 */
 	private void drawGrid(Graphics2D g2d) {
 		g2d.setColor(COLOR_GRID); g2d.setStroke(new BasicStroke(1));
-		int gridSize = 50;
+		int gridSize = GRID_SIZE;
 		for (int x = 0; x < getWidth(); x += gridSize) g2d.drawLine(x, 0, x, getHeight());
 		for (int y = 0; y < getHeight(); y += gridSize) g2d.drawLine(0, y, getWidth(), y);
 	}
@@ -194,7 +213,7 @@ public class GamePanel extends JPanel {
 	 * タイトル画面の描画。マップ選択ボタンなどを表示します。
 	 */
 	private void drawTitleScreen(Graphics2D g2d) {
-		g2d.setColor(Color.CYAN); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 50));
+		g2d.setColor(Color.CYAN); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 80)); // フォント大きく
 		centerString(g2d, "VECTOR ARENA", 200);
 
 		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
@@ -218,7 +237,7 @@ public class GamePanel extends JPanel {
 			}
 			// ガイドメッセージ
 			g2d.setColor(Color.WHITE); g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
-			centerString(g2d, "マップを選択してください", 360);
+			centerString(g2d, "マップを選択してください", 380);
 		} else {
 			// ゲストの場合: グレーアウトして無効化
 			for (int i = 0; i < 3; i++) {
@@ -231,22 +250,32 @@ public class GamePanel extends JPanel {
 			}
 			// ガイドメッセージ
 			g2d.setColor(Color.LIGHT_GRAY); g2d.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
-			centerString(g2d, "※マップ選択権はホスト(Player" + hostId + ")にあります", 360);
+			centerString(g2d, "※マップ選択権はホスト(Player" + hostId + ")にあります", 380);
 		}
 
+		// スタートボタン
 		g2d.setColor(Color.GREEN); g2d.fill(startButtonRect);
-		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
-		g2d.drawString("スタート", startButtonRect.x + 40, startButtonRect.y + 40);
+		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 40));
+		String st = "START";
+		int sw = g2d.getFontMetrics().stringWidth(st);
+		g2d.drawString(st, startButtonRect.x + (startButtonRect.width - sw)/2, startButtonRect.y + 55);
+
+		// 情報ボタン共通フォント
+		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 16));
 
 		// 能力紹介ボタン
 		g2d.setColor(Color.ORANGE); g2d.fill(abilityInfoBtnRect);
-		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
-		g2d.drawString("能力紹介", abilityInfoBtnRect.x + 45, abilityInfoBtnRect.y + 25);
+		g2d.setColor(Color.BLACK);
+		String ab = "能力紹介";
+		int aw = g2d.getFontMetrics().stringWidth(ab);
+		g2d.drawString(ab, abilityInfoBtnRect.x + (abilityInfoBtnRect.width - aw)/2, abilityInfoBtnRect.y + 30);
 
 		// 操作説明ボタン
 		g2d.setColor(Color.ORANGE); g2d.fill(controlsInfoBtnRect);
-		g2d.setColor(Color.BLACK); g2d.setFont(new Font(FONT_NAME, Font.BOLD, 14));
-		g2d.drawString("操作説明", controlsInfoBtnRect.x + 45, controlsInfoBtnRect.y + 25);
+		g2d.setColor(Color.BLACK);
+		String ct = "操作説明";
+		int cw = g2d.getFontMetrics().stringWidth(ct);
+		g2d.drawString(ct, controlsInfoBtnRect.x + (controlsInfoBtnRect.width - cw)/2, controlsInfoBtnRect.y + 30);
 	}
 
 	/**
@@ -416,10 +445,10 @@ public class GamePanel extends JPanel {
 	 * プレイヤー、障害物、弾丸、UIなどを描画します。
 	 */
 	private void drawGameScreen(Graphics2D g2d) {
-		// スコア表示
+		// スコア表示 (MAP_Y = 130なので、少し下にずらして見やすく)
 		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 30));
-		g2d.setColor(COLOR_PLAYER_ME); g2d.drawString("自分: " + getStars(logic.myWinCount), 50, 40);
-		g2d.setColor(COLOR_PLAYER_ENEMY);  g2d.drawString("相手: " + getStars(logic.enemyWinCount), 500, 40);
+		g2d.setColor(COLOR_PLAYER_ME); g2d.drawString("自分: " + getStars(logic.myWinCount), 50, 60);
+		g2d.setColor(COLOR_PLAYER_ENEMY);  g2d.drawString("相手: " + getStars(logic.enemyWinCount), 500, 60);
 
 		// 能力の頭文字を表示
 		g2d.setFont(new Font(FONT_NAME, Font.BOLD, 20));
@@ -432,8 +461,8 @@ public class GamePanel extends JPanel {
 			for(int i=0; i<myAbs.size(); i++) {
 				String name = myAbs.get(i);
 				String initial = (name.length() > 0) ? name.substring(0, 1) : "?";
-				// Y座標 80 あたりに横並びで表示
-				g2d.drawString(initial, 50 + (i * iconGap), 80);
+				// Y座標調整
+				g2d.drawString(initial, 50 + (i * iconGap), 100);
 			}
 		}
 
@@ -449,8 +478,8 @@ public class GamePanel extends JPanel {
 			for(int i=0; i<enAbs.size(); i++) {
 				String name = enAbs.get(i);
 				String initial = (name.length() > 0) ? name.substring(0, 1) : "?";
-				// 相手側（X: 500くらいから開始）
-				g2d.drawString(initial, 500 + (i * iconGap), 80);
+				// Y座標調整
+				g2d.drawString(initial, 500 + (i * iconGap), 100);
 			}
 		}
 

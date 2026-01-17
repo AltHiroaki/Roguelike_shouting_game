@@ -247,10 +247,18 @@ public class GameLogic {
 	public void resetPositions(int myId) {
 		int minId = Integer.MAX_VALUE;
 		for(int id : players.keySet()) minId = Math.min(minId, id);
+
 		for (Player p : players.values()) {
 			// IDが小さい方が左側、大きい方が右側スタート
-			if (p.id == minId) { p.x = MAP_X + 50; p.y = MAP_Y + 50; }
-			else { p.x = MAP_X + MAP_WIDTH - 50; p.y = MAP_Y + MAP_HEIGHT - 50; }
+			// 壁に埋まらないように SPAWN_MARGIN を使用して内側に配置
+			if (p.id == minId) {
+				p.x = MAP_X + SPAWN_MARGIN;
+				p.y = MAP_Y + SPAWN_MARGIN;
+			}
+			else {
+				p.x = MAP_X + MAP_WIDTH - SPAWN_MARGIN;
+				p.y = MAP_Y + MAP_HEIGHT - SPAWN_MARGIN;
+			}
 			p.resetForRound();
 		}
 	}

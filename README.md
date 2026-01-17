@@ -26,7 +26,7 @@ Java (Swing) を用いて開発した、2D見下ろし型の通信対戦シュ�
 2.  ソースコード内の `src/game/GameConstants.java` をテキストエディタで開きます。
 3.  `SERVER_IP` の値を、手順1で調べたIPアドレスに書き換えて保存します。
     ```java
-    public static final String SERVER_IP = "192.168.1.15"; // 例
+    public static final String SERVER_IP = "192.168.1.193"; // 例
     ```
 4.  **サーバー役のPC** で `ServerStart.bat` を起動します。
 5.  **それぞれのPC** で `GameStart.bat` を起動します。

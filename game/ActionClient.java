@@ -48,8 +48,8 @@ public class ActionClient extends JFrame {
 		loadImages();
 		setupConnection(SERVER_IP, SERVER_PORT);
 
-		setTitle("Action Game Client - Modular");
-		setSize(800, 700);
+		setTitle("Action Game Client");
+		setSize(1060, 790);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 

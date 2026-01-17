@@ -11,7 +11,7 @@ public class GameConstants {
 	// サーバー・通信設定
 	// ==========================================
 	/** 接続先サーバーの IPアドレス */
-	public static final String SERVER_IP = "133.42.230.124";
+	public static final String SERVER_IP = "127.0.0.1";
 	/** 接続先サーバーのポート番号 */
 	public static final int SERVER_PORT = 10000;
 	/** 参加するゲームの ID */
@@ -21,9 +21,12 @@ public class GameConstants {
 	// マップ・描画設定
 	// ==========================================
 	public static final int MAP_X = 50;
-	public static final int MAP_Y = 100;
-	public static final int MAP_WIDTH = 700;
-	public static final int MAP_HEIGHT = 450;
+	public static final int MAP_Y = 130; // 上部余白を確保してスコアを見やすく
+	public static final int MAP_WIDTH = 960;
+	public static final int MAP_HEIGHT = 540;
+
+	// グリッドサイズ
+	public static final int GRID_SIZE = 60;
 
 	/** ゲーム全体で使用するフォント名 (Monospaced, SansSerif, Dialog, DialogInput 等) */
 	public static final String FONT_NAME = "Monospaced";
@@ -39,8 +42,8 @@ public class GameConstants {
 	public static final int UI_BAR_GUARD_Y_OFFSET = -55;
 	public static final int UI_TEXT_POISON_Y_OFFSET = -40;
 
-	public static final int UI_CARD_START_X = 100;
-	public static final int UI_CARD_Y = 250;
+	public static final int UI_CARD_START_X = 240;
+	public static final int UI_CARD_Y = 280; // 位置調整
 	public static final int UI_CARD_WIDTH = 180;
 	public static final int UI_CARD_HEIGHT = 250;
 	public static final int UI_CARD_GAP = 20;
@@ -57,7 +60,7 @@ public class GameConstants {
 	// プレイヤー基本パラメータ
 	// ==========================================
 	public static final int PLAYER_MAX_HP = 100;
-	public static final double PLAYER_SPEED = 3.0;
+	public static final double PLAYER_SPEED = 4.0; // マップ拡大に合わせて速度アップ
 	public static final int PLAYER_SIZE = 15;
 
 	// 状態異常の効果時間 (フレーム数)
@@ -98,10 +101,13 @@ public class GameConstants {
 	// ==========================================
 	// マップ生成定数
 	// ==========================================
-	public static final int MAP_GEN_MARGIN = 100;
-	public static final int MAP_C_CROSS_SIZE = 100;
-	public static final int MAP_C_CORNER_MARGIN = 80;
-	public static final int MAP_C_CORNER_SIZE = 50;
+	public static final int MAP_GEN_MARGIN = 120;
+	public static final int MAP_C_CROSS_SIZE = 120;
+	public static final int MAP_C_CORNER_MARGIN = 60;
+	public static final int MAP_C_CORNER_SIZE = 60;
+
+	// スポーン位置のマージン (壁埋まり防止)
+	public static final int SPAWN_MARGIN = 180;
 
 	// ==========================================
 	// リソース・フラグ
