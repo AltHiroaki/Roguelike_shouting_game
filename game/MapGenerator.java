@@ -11,9 +11,9 @@ import static game.GameConstants.*;
 public class MapGenerator {
 
 	// --- マップタイプ定数 ---
-	public static final int MAP_TYPE_C = 0; // 要塞
-	public static final int MAP_TYPE_A = 1; // 平原
-	public static final int MAP_TYPE_B = 2; // 通路
+	public static final int MAP_TYPE_C = 0; // 要塞 (Fortress)
+	public static final int MAP_TYPE_A = 1; // 平原 (Plains / Tactical)
+	public static final int MAP_TYPE_B = 2; // 通路 (Corridor / Maze)
 
 	/**
 	 * 指定されたタイプのマップデータを生成します。
@@ -23,69 +23,82 @@ public class MapGenerator {
 	public static ArrayList<Line2D.Double> generate(int type) {
 		ArrayList<Line2D.Double> obstacles = new ArrayList<>();
 
+		int cx = MAP_X + MAP_WIDTH / 2;
+		int cy = MAP_Y + MAP_HEIGHT / 2;
+
+		// グリッドサイズ
+		int g = GRID_SIZE;
+
 		if (type == MAP_TYPE_A) {
-			// === マップA: 平原 ===
-			// 中央に小さな遮蔽物と、コーナー付近にL字壁を配置
-			int cx = MAP_X + MAP_WIDTH / 2;
-			int cy = MAP_Y + MAP_HEIGHT / 2;
-			int len = 150;
+			// === マップA ===
+			// 斜めの遮蔽物を配置し、射線を複雑にする
 
-			// 中央十字のような配置（隙間あり）
-			obstacles.add(new Line2D.Double(cx - len, cy, cx - 30, cy));
-			obstacles.add(new Line2D.Double(cx + 30, cy, cx + len, cy));
-			obstacles.add(new Line2D.Double(cx, cy - len, cx, cy - 30));
-			obstacles.add(new Line2D.Double(cx, cy + 30, cx, cy + len));
+			obstacles.add(new Line2D.Double(cx - 150, cy - 100, cx - 50, cy));
+			obstacles.add(new Line2D.Double(cx + 50, cy, cx + 150, cy + 100));
 
-			// 左右の遮蔽物
-			obstacles.add(new Line2D.Double(MAP_X + 100, MAP_Y + 100, MAP_X + 200, MAP_Y + 100));
-			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH - 200, MAP_Y + MAP_HEIGHT - 100, MAP_X + MAP_WIDTH - 100, MAP_Y + MAP_HEIGHT - 100));
+			obstacles.add(new Line2D.Double(cx + 150, cy - 100, cx + 50, cy - 200));
+			obstacles.add(new Line2D.Double(cx - 150, cy + 100, cx - 50, cy + 200));
+
+			// 左右の小さなボックス(グリッド合わせ)
+			// グリッドに合わせて配置: X軸は左端/右端から3グリッド分
+			addBox(obstacles, MAP_X + g*3 + g/2, MAP_Y + g*3 + g/2, g/2);
+			addBox(obstacles, MAP_X + MAP_WIDTH - (g*3 + g/2), MAP_Y + MAP_HEIGHT - (g*3 + g/2), g/2);
 
 		} else if (type == MAP_TYPE_B) {
-			// === マップB: 通路 ===
-			// 横長の通路を形成するような壁配置
-			for (int i = 1; i <= 3; i++) {
-				int y = MAP_Y + (MAP_HEIGHT / 4) * i;
-				double gap = 100; // 中央を通れるように隙間を開ける
-				obstacles.add(new Line2D.Double(MAP_X + 50, y, MAP_X + (double) MAP_WIDTH /2 - gap /2, y));
-				obstacles.add(new Line2D.Double(MAP_X + (double) MAP_WIDTH /2 + gap/2, y, MAP_X + MAP_WIDTH - 50, y));
-			}
-			// 縦の遮蔽物
-			obstacles.add(new Line2D.Double(MAP_X + (double) MAP_WIDTH /2, MAP_Y + 50, MAP_X + (double) MAP_WIDTH /2, MAP_Y + 150));
-			obstacles.add(new Line2D.Double(MAP_X + (double) MAP_WIDTH /2, MAP_Y + MAP_HEIGHT - 150, MAP_X + (double) MAP_WIDTH /2, MAP_Y + MAP_HEIGHT - 50));
+			// === マップB ===
+
+			double gap = 160;
+
+			obstacles.add(new Line2D.Double(cx - gap, MAP_Y, cx - gap, cy + 50));
+			obstacles.add(new Line2D.Double(cx + gap, MAP_Y, cx + gap, cy + 50));
+			obstacles.add(new Line2D.Double(cx, cy - 50, cx, MAP_Y + MAP_HEIGHT));
+			obstacles.add(new Line2D.Double(MAP_X, cy, MAP_X + 150, cy));
+			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH - 150, cy, MAP_X + MAP_WIDTH, cy));
 
 		} else {
-			// === マップC: 要塞 (デフォルト) ===
-			// 中央に大きな十字壁と、四隅にL字のコーナー壁
-			int cx = MAP_X + MAP_WIDTH / 2;
-			int cy = MAP_Y + MAP_HEIGHT / 2;
+			// === マップC ===
 
-			// 中央の十字壁
-			obstacles.add(new Line2D.Double(cx - MAP_C_CROSS_SIZE, cy, cx + MAP_C_CROSS_SIZE, cy));
-			obstacles.add(new Line2D.Double(cx, cy - MAP_C_CROSS_SIZE, cx, cy + MAP_C_CROSS_SIZE));
+			addRect(obstacles, cx, cy, 120, 90);
+			// 周囲の小さい柱 (1マス x 1マス)
+			int offX = g * 4 + g/2; // 270
+			int offY = g * 2;       // 120
+			// 半径30 (サイズ60x60 = 1マス)
+			int r = 30;
+			addRect(obstacles, cx - offX, cy - offY, r, r); // 左上
+			addRect(obstacles, cx + offX, cy - offY, r, r); // 右上
+			addRect(obstacles, cx - offX, cy + offY, r, r); // 左下
+			addRect(obstacles, cx + offX, cy + offY, r, r); // 右下
 
-			// 四隅のコーナー壁
-			int margin = MAP_C_CORNER_MARGIN;
-			int size = MAP_C_CORNER_SIZE;
-
-			addCorner(obstacles, MAP_X + margin, MAP_Y + margin, size, 1, 1);
-			addCorner(obstacles, MAP_X + MAP_WIDTH - margin, MAP_Y + margin, size, -1, 1);
-			addCorner(obstacles, MAP_X + margin, MAP_Y + MAP_HEIGHT - margin, size, 1, -1);
-			addCorner(obstacles, MAP_X + MAP_WIDTH - margin, MAP_Y + MAP_HEIGHT - margin, size, -1, -1);
+			// コーナー付近の追加遮蔽 (グリッド線上に配置)
+			obstacles.add(new Line2D.Double(MAP_X, MAP_Y + g*2, MAP_X + g, MAP_Y + g*2));
+			obstacles.add(new Line2D.Double(MAP_X + MAP_WIDTH, MAP_Y + MAP_HEIGHT - g*2, MAP_X + MAP_WIDTH - g, MAP_Y + MAP_HEIGHT - g*2));
 		}
 		return obstacles;
 	}
 
 	/**
-	 * 四隅にL字型の壁を追加するためのヘルパーメソッド。
-	 * @param list 追加先のリスト
-	 * @param x 起点X座標
-	 * @param y 起点Y座標
-	 * @param size 壁の長さ
-	 * @param dx X方向の向き (1 or -1)
-	 * @param dy Y方向の向き (1 or -1)
+	 * 正方形を追加（互換性のため残存）
 	 */
-	private static void addCorner(ArrayList<Line2D.Double> list, int x, int y, int size, int dx, int dy) {
-		list.add(new Line2D.Double(x, y, x + size * dx, y));
-		list.add(new Line2D.Double(x, y, x, y + size * dy));
+	private static void addBox(ArrayList<Line2D.Double> list, int x, int y, int radius) {
+		addRect(list, x, y, radius, radius);
+	}
+
+	/**
+	 * 指定した中心座標に矩形の壁を追加するヘルパーメソッド。
+	 * @param list 追加先のリスト
+	 * @param x 中心のX座標
+	 * @param y 中心のY座標
+	 * @param rx X方向の半径（幅の半分）
+	 * @param ry Y方向の半径（高さの半分）
+	 */
+	private static void addRect(ArrayList<Line2D.Double> list, int x, int y, int rx, int ry) {
+		// 上
+		list.add(new Line2D.Double(x - rx, y - ry, x + rx, y - ry));
+		// 右
+		list.add(new Line2D.Double(x + rx, y - ry, x + rx, y + ry));
+		// 下
+		list.add(new Line2D.Double(x + rx, y + ry, x - rx, y + ry));
+		// 左
+		list.add(new Line2D.Double(x - rx, y + ry, x - rx, y - ry));
 	}
 }
