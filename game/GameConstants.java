@@ -20,9 +20,8 @@ public class GameConstants {
 	// ==========================================
 	// マップ・描画設定
 	// ==========================================
-	// ★修正: グリッド(60)の倍数に変更して、線にピッタリ合わせる
-	public static final int MAP_X = 60;  // 50 -> 60
-	public static final int MAP_Y = 120; // 130 -> 120
+	public static final int MAP_X = 60;
+	public static final int MAP_Y = 120;
 
 	public static final int MAP_WIDTH = 960;
 	public static final int MAP_HEIGHT = 540;
@@ -88,7 +87,7 @@ public class GameConstants {
 	// ==========================================
 	public static final int WEAPON_DEFAULT_AMMO = 5;
 	public static final int WEAPON_DEFAULT_RELOAD = 60;
-	public static final int WEAPON_DEFAULT_DAMAGE = 15;
+	public static final int WEAPON_DEFAULT_DAMAGE = 20;
 	public static final double WEAPON_DEFAULT_SPEED = 10.0;
 	public static final int WEAPON_DEFAULT_SIZE = 8;
 	public static final int WEAPON_BURST_INTERVAL = 5;
