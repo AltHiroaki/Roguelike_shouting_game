@@ -192,12 +192,89 @@ public class GamePanel extends JPanel {
 
 	/**
 	 * 背景のグリッド線を描画します。
+	 * グラデーション（フォグ）処理を追加して、奥の途切れを目立たなくしました。
 	 */
 	private void drawGrid(Graphics2D g2d) {
-		g2d.setColor(COLOR_GRID); g2d.setStroke(new BasicStroke(1));
-		int gridSize = GRID_SIZE;
-		for (int x = 0; x < getWidth(); x += gridSize) g2d.drawLine(x, 0, x, getHeight());
-		for (int y = 0; y < getHeight(); y += gridSize) g2d.drawLine(0, y, getWidth(), y);
+		// --- 設定パラメータ ---
+		double horizonRatio = 0.3;  // 消失点の位置
+		double scrollSpeed = 2.0;   // スクロール速度
+		double perspectiveScale = 300.0; // 遠近感の強さ
+
+		// --- 計算と描画 ---
+		int w = getWidth();
+		int h = getHeight();
+		double cx = w / 2.0;
+		double cy = h * horizonRatio;
+
+		// クリップ設定（消失点より上には描かない）
+		Shape originalClip = g2d.getClip();
+		g2d.setClip(0, (int)cy, w, h - (int)cy);
+
+		// 地平線より上の空を暗く塗りつぶす
+		g2d.setColor(new Color(10, 15, 20));
+		g2d.fillRect(0, 0, w, (int)cy);
+
+		// 基本のグリッド色を取得
+		Color c = COLOR_GRID;
+		// 手前用の色（不透明）
+		Color colorNear = new Color(c.getRed(), c.getGreen(), c.getBlue(), 255);
+		// 奥用の色（透明）
+		Color colorFar  = new Color(c.getRed(), c.getGreen(), c.getBlue(), 0);
+
+		g2d.setStroke(new BasicStroke(1f));
+
+		// アニメーション用オフセット
+		double offset = (GameLogic.frameCount * scrollSpeed) % GRID_SIZE;
+
+
+		// === 1. 垂直線（縦線）の描画 ===
+		// グラデーション設定: 上(消失点)は透明、下(手前)は不透明
+		Paint originalPaint = g2d.getPaint();
+		g2d.setPaint(new GradientPaint(0, (float)cy, colorFar, 0, (float)h, colorNear));
+
+		int xRange = 2000;
+		for (int x = -xRange; x <= xRange; x += GRID_SIZE) {
+			double worldX = x;
+			double bottomX = cx + (worldX - cx) * 3.0;
+			g2d.drawLine((int)cx, (int)cy, (int)bottomX, h);
+		}
+
+		// ペイント設定を元に戻す（単色塗り用）
+		g2d.setPaint(originalPaint);
+
+
+		// === 2. 水平線（横線）の描画 ===
+		double maxZ = 2000.0;
+		double minZ = 10.0;
+
+		for (double z = maxZ; z > minZ; z -= GRID_SIZE) {
+			double currentZ = z - offset;
+			if (currentZ < minZ) continue;
+
+			// 距離に応じた透明度計算（フォグ処理）
+			// 手前(0)〜奥(maxZ) の割合でアルファ値を決める
+			float alphaFactor = 1.0f - (float)(currentZ / maxZ);
+
+			// 範囲制限 (0.0〜1.0)
+			if (alphaFactor < 0) alphaFactor = 0;
+			if (alphaFactor > 1) alphaFactor = 1;
+
+			// アルファ値を適用した色を設定
+			int alpha = (int)(255 * alphaFactor);
+			g2d.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha));
+
+			double screenY = cy + (perspectiveScale * 100) / currentZ;
+			if (screenY > h) continue;
+
+			g2d.drawLine(0, (int)screenY, w, (int)screenY);
+		}
+
+		// クリップ解除
+		g2d.setClip(originalClip);
+
+		// 地平線の境界線を薄く描画（あまり目立たないようにアルファ値を下げる）
+		g2d.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 50));
+		g2d.drawLine(0, (int)cy, w, (int)cy);
 	}
 
 	/**
