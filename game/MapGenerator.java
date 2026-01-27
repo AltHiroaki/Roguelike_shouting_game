@@ -84,7 +84,7 @@ public class MapGenerator {
 	}
 
 	/**
-	 * 指定した中心座標に矩形の壁を追加するヘルパーメソッド。
+	 * 指定した中心座標に長方形の壁を追加するヘルパーメソッド。
 	 * @param list 追加先のリスト
 	 * @param x 中心のX座標
 	 * @param y 中心のY座標

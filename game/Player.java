@@ -378,7 +378,7 @@ public class Player {
 	}
 
 	/**
-	 * プレイヤーの矩形（当たり判定用）を取得します。
+	 * プレイヤーの長方形（当たり判定用）を取得します。
 	 */
 	public Rectangle getBounds() {
 		return new Rectangle((int) x - size, (int) y - size, size * 2, size * 2);
