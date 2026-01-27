@@ -46,7 +46,8 @@ public class ActionClient extends JFrame {
 	 */
 	public ActionClient() {
 		loadImages();
-		setupConnection(SERVER_IP, SERVER_PORT);
+		String host = promptForServerIp();
+		setupConnection(host, SERVER_PORT);
 
 		setTitle("Action Game Client");
 		setSize(1060, 790);
@@ -60,6 +61,22 @@ public class ActionClient extends JFrame {
 		gameTimer = new javax.swing.Timer(1000 / FPS, e -> gameLoop());
 		gameTimer.start();
 		setVisible(true);
+	}
+
+	/**
+	 * IPアドレスを入力させ、入力されたIPアドレスを採用します。
+	 * @return IP アドレス
+	 */
+	private String promptForServerIp() {
+		String input = JOptionPane.showInputDialog(
+				this,
+				"Enter server IP address (blank for localhost):",
+				"Server IP",
+				JOptionPane.QUESTION_MESSAGE
+		);
+		if (input == null) return SERVER_IP;
+		String trimmed = input.trim();
+		return trimmed.isEmpty() ? SERVER_IP : trimmed;
 	}
 
 	/**
