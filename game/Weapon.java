@@ -34,7 +34,7 @@ public class Weapon {
 	public boolean randomSpeed = false;
 	public int extraBounces = 0;
 
-	// 新規: 弾の最大寿命
+	// 弾の最大寿命
 	public int bulletLifeTime = BULLET_DEFAULT_LIFE;
 
 	// 適用されているエフェクトリスト

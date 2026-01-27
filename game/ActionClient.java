@@ -30,7 +30,6 @@ public class ActionClient extends JFrame {
 	private javax.swing.Timer gameTimer;
 
 	// --- ゲーム進行状態 ---
-	// ABILITY_INFO, CONTROLS_INFO を追加
 	public enum GameState { TITLE, ABILITY_INFO, CONTROLS_INFO, WAITING, PLAYING, ROUND_END_SELECT, ROUND_END_WAIT, COUNTDOWN, GAME_OVER }
 	public GameState currentState = GameState.TITLE;
 
@@ -149,7 +148,6 @@ public class ActionClient extends JFrame {
 
 	/**
 	 * パワーアップ選択後に呼ばれます。次のラウンドの準備完了をサーバーへ通知します。
-	 * 引数に取得した能力名を追加
 	 */
 	public void onPowerUpSelected(String abilityName) {
 		// 能力名だけ送る（例: "ABILITY Hill"）
@@ -345,7 +343,6 @@ public class ActionClient extends JFrame {
 				}
 				logic.resetPositions(myId);
 			} else if (cmd.equals("ABILITY")) {
-				// 修正: スペースを含む能力名("Self Regen"など)に対応
 				// サーバーからの形式: ABILITY <Name Part1> <Name Part2> ... <SenderID>
 				// 必ず最後のトークンがID
 

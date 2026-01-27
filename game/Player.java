@@ -54,9 +54,7 @@ public class Player {
 	public boolean hasPassiveThirst = false;
 	public boolean hasPassiveDelay = false;
 	public boolean hasPassiveConfidence = false;
-
-	// 新規パッシブ
-	public boolean hasPassiveBuildUp = false; // ビルドアップ
+	public boolean hasPassiveBuildUp = false;
 
 	// --- スキル用内部タイマー・バッファ ---
 	public double delayDamageBuffer = 0;
