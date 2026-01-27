@@ -77,7 +77,7 @@ public class MapGenerator {
 	}
 
 	/**
-	 * 正方形を追加（互換性のため残存）
+	 * 正方形（互換性のため残存）
 	 */
 	private static void addBox(ArrayList<Line2D.Double> list, int x, int y, int radius) {
 		addRect(list, x, y, radius, radius);

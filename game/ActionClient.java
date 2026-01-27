@@ -210,7 +210,7 @@ public class ActionClient extends JFrame {
 				// 自分を接続リストに追加
 				logic.connectedPlayerIds.add(myId);
 			} else if (cmd.equals("ENTER")) {
-				// 追加: 誰かが接続した
+				// 誰かが接続した
 				int pid = Integer.parseInt(tokens[1]);
 				logic.connectedPlayerIds.add(pid);
 			} else if (cmd.equals("USERS")) {
@@ -287,7 +287,7 @@ public class ActionClient extends JFrame {
 					p.weapon.reloadDuration = Integer.parseInt(tokens[4]);
 				}
 
-				// 【追加】最大ガードクールダウンの同期
+				// 最大ガードクールダウンの同期
 				if(tokens.length > 5) {
 					p.currentMaxGuardCooldown = Integer.parseInt(tokens[5]);
 				}

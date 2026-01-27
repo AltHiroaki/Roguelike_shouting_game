@@ -56,7 +56,7 @@ public class GamePanel extends JPanel {
 		addKeyListener(input);
 		addMouseListener(input);
 		addMouseMotionListener(input);
-		addMouseWheelListener(input); // ホイールリスナー追加
+		addMouseWheelListener(input);
 
 		// UIクリック処理用のリスナー
 		addMouseListener(new MouseAdapter() {
