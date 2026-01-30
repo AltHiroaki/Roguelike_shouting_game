@@ -233,6 +233,7 @@ public class GamePanel extends JPanel {
 				g2d.fill(btn);
 				g2d.setColor(Color.BLACK);
 				String lb = labels[i]; int sw = g2d.getFontMetrics().stringWidth(lb);
+				// ボタンの高さに対して、文字が垂直方向の中央に来るように調整 (+26px)
 				g2d.drawString(lb, btn.x + (btn.width - sw)/2, btn.y + 26);
 			}
 			// ガイドメッセージ
@@ -246,6 +247,7 @@ public class GamePanel extends JPanel {
 				g2d.fill(btn);
 				g2d.setColor(Color.GRAY);
 				String lb = labels[i]; int sw = g2d.getFontMetrics().stringWidth(lb);
+				// ボタンの高さに対して、文字が垂直方向の中央に来るように調整 (+26px)
 				g2d.drawString(lb, btn.x + (btn.width - sw)/2, btn.y + 26);
 			}
 			// ガイドメッセージ
